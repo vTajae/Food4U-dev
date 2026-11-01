@@ -15,13 +15,15 @@ _Updated 2026-11-01._
 - #29 dead code removed; `tsc` 0 and lint 0; `NEON_PROJECT_ID` replaces the hardcoded project id; internal tool names out of code.
 - Public docs rewritten: README, architecture, deploy, neon-setup, safety-design, roadmap, four ADRs, CONTRIBUTING, SECURITY, frontend/backend/e2e READMEs.
 
+- #31 PR template, Dependabot, `.gitattributes`. A GitHub Actions workflow was added and then removed: the owner decided (2026-11-01) that gates run locally, not in CI.
+- #32 `internal/promote.mjs` with allowlist, marker scan and tests.
+- Full local gates on `main`: frontend tests 140, lint 0, tsc 0; backend 99; root 31; e2e 79 passed / 11 known fixmes at both widths; contract suite (see below).
+
 ## Next
 
-1. `ci/quality-gates`: GitHub Actions (frontend lint, tsc, tests, build; backend pytest; root tests), PR template, dependabot, `.gitattributes`.
-2. `chore/promote-tool`: `internal/promote.mjs` with allowlist and marker scan, plus its test.
-3. First promotion to `vTajae/Food4U`; configure the repo (squash only, ruleset on `main`, private vulnerability reporting); open issues for D018-* defects, deprecated `GET /profile`, stale CORS origin in `backend/server.py`, and the privacy page's "filter and explain suggestions" wording (pinned by `contract/pages-api.mjs`).
-4. Point Render at `Food4U` `main`; deploy the Worker from a clean checkout; run `check:d1`, `check:live`, `cleanup:live`; then delete `sprint1-nextjs`.
-5. Rebase and land PR #26 through the new process; its production rollout changes the Neon database and needs owner confirmation first.
+1. First promotion to `vTajae/Food4U`; configure the repo (squash only, ruleset on `main` without status checks, private vulnerability reporting); open issues for D018-* defects, deprecated `GET /profile`, stale CORS origin in `backend/server.py`, and the privacy page's "filter and explain suggestions" wording (pinned by `contract/pages-api.mjs`).
+2. Point Render at `Food4U` `main`; deploy the Worker from a clean checkout; run `check:d1`, `check:live`, `cleanup:live`; then delete `sprint1-nextjs`.
+3. Rebase and land PR #26 through the new process; its production rollout changes the Neon database and needs owner confirmation first.
 
 ## Owner-gated
 

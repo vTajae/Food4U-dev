@@ -4,7 +4,7 @@
 
 - Branch from `main`: `feat/…`, `fix/…`, `chore/…`, `docs/…`, `test/…`, `ci/…`.
 - Commit subjects follow [Conventional Commits](https://www.conventionalcommits.org/), for example `fix(onboarding): keep drafts after choosing a diet`. The body says why, not what.
-- `main` moves only by squash-merged pull request with CI green. No force pushes.
+- `main` moves only by squash-merged pull request after the gates below pass locally. No force pushes.
 
 ## Pull requests
 
@@ -14,7 +14,7 @@ The template asks for three things; fill in all three.
 2. **Evidence**: what failed before and passes after. A bug fix includes a regression test that was seen failing without the fix. Quote the decisive line of the output, not whole logs.
 3. **Merge danger**: one-way or two-way door, and the blast radius.
 
-Report CI state only from the live checks on the pull request.
+There is no CI by choice; the gates run on the developer's machine, and the Evidence section of the pull request is the record of that run.
 
 ## Before you push
 
