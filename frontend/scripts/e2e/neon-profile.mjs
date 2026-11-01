@@ -5,7 +5,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createHarness, localBase } from '../../../contract/harness.mjs';
 
-const evidence = resolve('../.cockpit/20261013-neon/evidence');
+const evidence = resolve(process.env.EVIDENCE_DIR ?? 'e2e/.artifacts/neon-evidence');
 await mkdir(evidence, { recursive: true });
 assert.ok(process.env.NEON_E2E_OWNER, 'runner ownership token required');
 const base = localBase(process.env.BASE_URL || 'http://127.0.0.1:3001');

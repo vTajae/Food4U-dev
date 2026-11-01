@@ -31,7 +31,6 @@ __pycache__/
 logs/
 *.log
 /live-check-evidence/
-.cockpit/
 
 # Agent and editor state
 .omc/
