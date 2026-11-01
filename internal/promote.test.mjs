@@ -55,6 +55,7 @@ test('the real markers catch the strings that leaked before', () => {
   const fine = [
     'https://food4u-frontend.qias-webdev.workers.dev', 'postgresql+asyncpg://u:p@localhost:5432/test', 'Rust spike parked',
     'https://github.com/vTajae/Food4U/issues/1', 'assert.doesNotMatch(out, /postgres:\\/\\//)',
+    'DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable',
   ];
   for (const line of fine) {
     assert.equal(scanForMarkers(['x'], markers, () => Buffer.from(line)).length, 0, line);
