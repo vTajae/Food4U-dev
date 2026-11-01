@@ -34,8 +34,10 @@ class AsyncDatabaseSession:
                 "Neon child branch (see docs/neon-setup.md)."
             )
         url = make_url(self.db_url)
-        # libpq URL options are not asyncpg connect keywords. Always require
-        # verified TLS, including hostname/SNI, rather than weakening it.
+        # libpq URL options are not asyncpg connect keywords. TLS is verified
+        # (hostname/SNI included) unless the URL says sslmode=disable, which only
+        # the local Docker network uses; Neon URLs never carry it.
+        plaintext = url.query.get("sslmode") == "disable"
         url = url.set(drivername="postgresql+asyncpg").difference_update_query(
             ["sslmode", "channel_binding"]
         )
@@ -48,7 +50,7 @@ class AsyncDatabaseSession:
             pool_size=10,
             max_overflow=20,
             pool_pre_ping=True,
-            connect_args={"ssl": ssl_context},
+            connect_args={} if plaintext else {"ssl": ssl_context},
             isolation_level='AUTOCOMMIT'
         )
         self.session_factory = sessionmaker(

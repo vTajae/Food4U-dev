@@ -24,6 +24,7 @@ __pycache__/
 .dev.vars
 .dev.vars.*
 !.dev.vars.example
+!.dev.vars.docker.example
 .neon
 **/.postgresql
 

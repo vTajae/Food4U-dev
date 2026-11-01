@@ -57,7 +57,15 @@ docs/       Architecture, deploy, roadmap, safety design, ADRs
 
 ## Running locally
 
-Prerequisites: Node 22+, Python 3.11, a Neon project (free tier is enough), Google Chrome for the e2e suite.
+With Docker (Postgres, backend and the Worker dev server, dev-only settings, no Neon needed):
+
+```bash
+cp .env.example .env
+cp frontend/.dev.vars.docker.example frontend/.dev.vars.docker
+docker compose up -d --build --wait      # http://127.0.0.1:3001; details in docs/docker.md
+```
+
+Without Docker: Node 22+, Python 3.11, a Neon project (free tier is enough), Google Chrome for the e2e suite.
 
 Frontend:
 
