@@ -44,6 +44,9 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install -r requirements-dev.txt
+      # NLTK refuses data that is writable by another account; the hosted runner's
+      # site-packages is group-writable, so llama_index's bundled corpus must be made private.
+      - run: chmod -R go-w "$(python -c 'import llama_index.core, os; print(os.path.join(os.path.dirname(llama_index.core.__file__), "_static", "nltk_cache"))')"
       - run: python -m pytest tests -q
 
   scripts:
