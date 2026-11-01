@@ -39,6 +39,7 @@ test('the real markers catch the strings that leaked before', () => {
     'neon connection-string production --project-id patient-cherry-72346680',
     'render deploys create srv-crb5dm2j1k6c73cn8f40 --commit',
     'works on G:\\WebDev\\Food4U',
+    'Copyright Tajae Knox',
     'see internal/e2e/DEFECTS.md',
     'postgresql://food4u_web:Sup3rSecretPw@ep-host.neon.tech/db',
     'written by Claude Code',
@@ -46,7 +47,11 @@ test('the real markers catch the strings that leaked before', () => {
   for (const line of leaks) {
     assert.equal(scanForMarkers(['x'], markers, () => Buffer.from(line)).length > 0, true, line);
   }
-  const fine = ['https://food4u-frontend.qias-webdev.workers.dev', 'postgresql+asyncpg://u:p@localhost:5432/test', 'Rust spike parked'];
+  const fine = [
+    'https://food4u-frontend.qias-webdev.workers.dev', 'postgresql+asyncpg://u:p@localhost:5432/test', 'Rust spike parked',
+    'https://github.com/vTajae/Food4U/issues/1', 'assert.doesNotMatch(out, /postgres:\\/\\//)',
+    "const secret = 'postgres://user:private-password@example/db'; // promote:allow fixture",
+  ];
   for (const line of fine) {
     assert.equal(scanForMarkers(['x'], markers, () => Buffer.from(line)).length, 0, line);
   }
