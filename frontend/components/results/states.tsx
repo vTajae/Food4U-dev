@@ -5,7 +5,7 @@ export function ResultsSkeleton() {
   return (
     <div className="flex flex-col gap-4" aria-busy="true">
       <p role="status" className="text-body-sm text-ink-muted">
-        Finding meals that fit your plan…
+        Finding meal ideas…
       </p>
       <ul className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {[0, 1, 2].map((i) => (

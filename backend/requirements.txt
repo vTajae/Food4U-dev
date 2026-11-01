@@ -8,7 +8,7 @@ python-dotenv==1.0.1
 SQLAlchemy==2.0.32
 typing_extensions==4.12.2
 uvicorn==0.30.6
-# Existing package.json local launchers invoke `fastapi dev`.
+# fastapi-cli provides the `fastapi dev` launcher for local runs.
 fastapi-cli==0.0.5
 
 # Lazily loaded Gemini / Google Drive / Qdrant suggestion path (no local models).

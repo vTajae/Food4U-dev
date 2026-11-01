@@ -2,7 +2,7 @@
 // Usage: node scripts/e2e/login-loop.mjs <baseUrl>   (exit 0 = green, 1 = red). Needs Chrome + playwright-core.
 import { chromium } from "playwright-core";
 const base = process.argv[2];
-const b = await chromium.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe" });
+const b = await chromium.launch({ executablePath: process.env.CHROME_PATH ?? "C:/Program Files/Google/Chrome/Application/chrome.exe" });
 const page = await (await b.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
 page.setDefaultNavigationTimeout(180000);
 const net = [];

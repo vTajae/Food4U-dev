@@ -10,7 +10,7 @@ Live app: https://food4u-frontend.qias-webdev.workers.dev
 
 | Area | State |
 |---|---|
-| Accounts, sessions, login | Working. D1 accounts, signed session cookie, per-request JWT to the backend |
+| Accounts, sessions, login | Working. D1 accounts, signed session cookie, a JWT issued at login and attached to backend calls |
 | Onboarding | Working. Five steps: cuisines, diet, medical condition (NLM Clinical Tables lookup), allergies and foods to avoid, spend per meal. Drafts are kept per account |
 | Profile persistence | Working. Neon Postgres through the FastAPI backend, keyed on a stable public id |
 | Ask screen | UI done. The backend's AI suggestion path is not configured in production and answers 503, which the UI reports plainly |
@@ -90,7 +90,7 @@ npm test                                   # root: post-deploy script tests
 cd frontend && npm run lint && npm run typecheck && npm test
 cd frontend && npm run e2e                 # real Chrome, both widths, fake backend; builds a fresh Worker
 node contract/local-next.mjs               # web contract against an isolated local server
-cd backend && .venv/Scripts/python -m pytest tests -q    # no database needed
+cd backend && .venv/bin/python -m pytest tests -q        # Windows: .venv\Scripts\python; no database needed
 ```
 
 ## Contributing and security

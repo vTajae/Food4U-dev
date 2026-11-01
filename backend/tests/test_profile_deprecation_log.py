@@ -1,7 +1,7 @@
 """
 The deprecated GET /profile must be observable: one WARNING per hit, naming the
 public id and user agent, never the bearer token. POST /profile stays silent.
-This lets its removal (plan slice 5) be timed from production logs.
+This lets its removal be timed from production logs.
 """
 import logging
 

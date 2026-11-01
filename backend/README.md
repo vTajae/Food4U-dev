@@ -17,7 +17,7 @@ export USER_JWT_SECRET_KEY=dev-only-jwt-secret USER_JWT_ALGORITHM=HS256
 .venv/Scripts/python -m uvicorn server:app --reload
 ```
 
-Environment, from the process or an ignored `.env`: `DATABASE_URL`, `USER_JWT_SECRET_KEY` (equal to the Worker's `JWT_SECRET_KEY`), `USER_JWT_ALGORITHM`, optional `FDC_API_KEY` and `SPOONACULAR_API_KEY`. The AI path needs `GOOGLE_GEMINI_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`, `GOOGLE_DRIVE_FOLDER_ID` and `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64`; without all five, `POST /api/suggestion` answers 503 and the AI packages are never imported.
+Environment, from the process or an ignored `.env`: `DATABASE_URL`, `USER_JWT_SECRET_KEY` (equal to the Worker's `JWT_SECRET_KEY`), `USER_JWT_ALGORITHM`, optional `FDC_API_KEY` and `SPOONACULAR_API_KEY`. The AI path needs `GOOGLE_GEMINI_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`, `GOOGLE_DRIVE_FOLDER_ID` and `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64` (without all five, `POST /api/suggestion` answers 503 and the AI packages are never imported), plus `EMBEDDING_MODEL_NAME` once it runs.
 
 ## Identity contract
 
@@ -33,7 +33,7 @@ app/api/repo         data access
 app/api/models       SQLAlchemy models
 app/api/schemas      Pydantic schemas
 app/config           database, diet seed, AI configuration
-migrations/          plain SQL applied by hand; startup create_all handles a fresh database
+migrations/          the CockroachDB-era migration, kept for history; startup create_all builds a fresh database
 tests/               pytest; no database required
 ```
 

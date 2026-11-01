@@ -14,7 +14,7 @@ import { cn } from "~/lib/utils";
 
 type Suggestion = { label: string; action: string; queryKey: string; text: string };
 
-// The former three red ActionButtons, as suggestion chips (takeaway T4/T7).
+// The former three red ActionButtons, as suggestion chips.
 const suggestions: Suggestion[] = [
   { label: "Suggest a meal", action: "suggest", queryKey: "randomMeal", text: "I'm hungry" },
   { label: "Find a recipe", action: "recipie", queryKey: "newRecipie", text: "Let's cook something" },

@@ -21,7 +21,7 @@ There is no CI by choice; the gates run on the developer's machine, and the Evid
 ```sh
 npm test
 cd frontend && npm run lint && npm run typecheck && npm test
-cd backend && .venv/Scripts/python -m pytest tests -q
+cd backend && .venv/bin/python -m pytest tests -q    # Windows: .venv\Scripts\python
 ```
 
 Run `npm run e2e` from `frontend/` when the change touches a screen, and `node contract/local-next.mjs` when it touches routing, auth or the public API shape.
