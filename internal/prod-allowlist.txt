@@ -10,6 +10,8 @@ SECURITY.md
 package.json
 package-lock.json
 neon.ts
+compose.yaml
+.env.example
 backend
 contract
 !contract/local-rust.mjs
