@@ -7,8 +7,8 @@ Food4U is two services. The Cloudflare Worker owns accounts and sessions and ren
 | | Frontend | Backend |
 |---|---|---|
 | Runtime | Cloudflare Worker, Next.js 16 on vinext | Render web service, FastAPI + Uvicorn |
-| Stores | D1 `user` table (accounts); KV sessions, moving to Neon | Neon Postgres via SQLAlchemy async + asyncpg |
-| Secrets | `USER_SESSION_SECRET`, `USER_COOKIE_SECRET`, `JWT_SECRET_KEY` | `DATABASE_URL`, `USER_JWT_SECRET_KEY`, `USER_JWT_ALGORITHM`, API keys |
+| Stores | D1 `user` table (accounts); sessions in Neon (`web_session` schema) or KV, chosen by `SESSION_DATABASE_URL` | Neon Postgres via SQLAlchemy async + asyncpg |
+| Secrets | `USER_SESSION_SECRET`, `USER_COOKIE_SECRET`, `JWT_SECRET_KEY`, `SESSION_DATABASE_URL` | `DATABASE_URL`, `USER_JWT_SECRET_KEY`, `USER_JWT_ALGORITHM`, API keys |
 | Config | `frontend/wrangler.jsonc` (bindings, `API_BASE_URL`) | `backend/app/config/` |
 
 ## Identity

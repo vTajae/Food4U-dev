@@ -72,11 +72,14 @@ test('cleanup deletes Neon before guarded D1 delete, then no-ops when absent', a
       }
       return d1([{ public_id: 'test-id', username: 'livecheck-123-abc@food4u.test' }]);
     },
-    deleteProfile: async id => { assert.equal(id, 'test-id'); calls.push('neon'); return 1; },
+    deleteProfile: async id => { assert.equal(id, 'test-id'); calls.push('neon'); return { profiles: 1, sessions: 2 }; },
   });
   assert.equal(code, 0);
   assert.deepEqual(calls, ['d1', 'neon', 'd1']);
-  assert.equal(JSON.parse(out.lines[0].slice('LIVE_CLEANUP '.length)).d1_users_deleted, 1);
+  const result = JSON.parse(out.lines[0].slice('LIVE_CLEANUP '.length));
+  assert.equal(result.d1_users_deleted, 1);
+  assert.equal(result.neon_profiles_deleted, 1);
+  assert.equal(result.sessions_deleted, 2, 'the account\'s web sessions go with it');
   const absent = output();
   assert.equal(await main(['--public-id', 'test-id'], { ...absent,
     run: async () => d1([]), deleteProfile: async () => assert.fail('must not delete without D1 identity'),

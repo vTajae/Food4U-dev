@@ -29,6 +29,7 @@ Reports, traces, screenshots and run receipts land under `playwright-report/`, `
 - The snapshot under test is byte-identical to the checkout; only the Wrangler bindings are replaced with local values. Owner files (`.dev.vars`, `.env.local`, `.neon`) are hashed before and after and never read.
 - The Worker may reach only the fake backend, and redirects are errors. Chrome goes through a deny-only proxy. Teardown asserts zero requests to the real backend.
 - Every named state is checked for console errors, page errors, failed same-origin requests, serious or critical axe violations (WCAG 2.0/2.1 A and AA), and raw ICD codes leaking into visible text.
+- Sessions go through the Neon store and the real `@neondatabase/serverless` driver; its HTTP queries hit `/sql` on the same owned fake origin, answered by PGlite (Postgres in WebAssembly) with the real `database/neon` migrations applied (`e2e/fake-neon.mjs`). `sessions.spec.ts` inspects and expires rows through harness-only endpoints the app never calls.
 - Retries are off. A failure keeps its trace, screenshot and video.
 
 Passing automation is not a WCAG or medical-safety certification.

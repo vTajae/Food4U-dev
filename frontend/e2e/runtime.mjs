@@ -10,6 +10,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { hash } from 'bcrypt-ts';
 import { unstable_startWorker } from 'wrangler';
+import { startFakeNeon } from './fake-neon.mjs';
 
 const frontend = fileURLToPath(new URL('../', import.meta.url));
 const root = resolve(frontend, '..');
@@ -32,7 +33,7 @@ async function ownerHashes() {
 }
 const before = await ownerHashes();
 const outbound = [], backendCalls = [], profiles = new Map(), suggestionAttempts = new Map();
-let worker, backend, proxy, backendOrigin, redirectHits = 0, deniedProxy = 0, onrender = 0;
+let worker, backend, proxy, backendOrigin, neonFake, redirectHits = 0, deniedProxy = 0, onrender = 0, sqlRequests = 0;
 const emptyProfile = () => ({ id: 18, attributes: [], diets: [], medical_history: [] });
 const savedProfile = () => ({ ...emptyProfile(), diets: [{ diet_type: { diet_name: 'Vegetarian' } }],
   medical_history: [{ icd_details: { code: 'J30.9', description: 'Allergic rhinitis, unspecified' } }] });
@@ -53,14 +54,29 @@ async function command(args) {
 }
 let failure;
 try {
+  // Sessions (slice 020): the private Worker's Neon queries land on /sql below,
+  // backed by PGlite with the real web_session migrations applied.
+  neonFake = await startFakeNeon(['0001_web_session.sql', '0002_web_session_grants.sql'].map(file => resolve(frontend, 'database/neon', file)));
   backend = createServer(async (req, res) => {
     res.setHeader('content-type', 'application/json');
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (url.pathname === '/_redirect') { res.writeHead(302, { location: `http://${req.headers.host}/_target` }); res.end(); return; }
     if (url.pathname === '/_target') { redirectHits++; res.end('{}'); return; }
+    const send = (status, body) => { res.statusCode = status; res.end(JSON.stringify(body)); };
+    if (url.pathname === '/sql' && req.method === 'POST') { sqlRequests++; return neonFake.handle(req, res); }
+    // Test-process-only probes of the session database (never called by the app).
+    if (url.pathname === '/__harness__/sessions') {
+      const { rows: [counts] } = await neonFake.db.query(
+        'SELECT count(*)::int AS total, (count(*) FILTER (WHERE expires_at > now()))::int AS live FROM web_session.session WHERE user_public_id = $1',
+        [url.searchParams.get('user')]);
+      return send(200, { ...counts, sql_requests: sqlRequests });
+    }
+    if (url.pathname === '/__harness__/expire-sessions' && req.method === 'POST') {
+      await neonFake.db.query("UPDATE web_session.session SET expires_at = now() - interval '1 second' WHERE user_public_id = $1", [url.searchParams.get('user')]);
+      return send(200, { expired: true });
+    }
     const user = identity(req);
     backendCalls.push({ method: req.method, path: req.url, user }); // no tokens
-    const send = (status, body) => { res.statusCode = status; res.end(JSON.stringify(body)); };
     if (url.pathname === '/health') return send(200, { status: 'ok' });
     if (!user) return send(401, { detail: 'Missing synthetic identity' });
     if (url.pathname === '/refs' && url.searchParams.get('queryKey') === 'diets') {
@@ -124,7 +140,8 @@ try {
   const configPath = resolve(temp, 'wrangler.json'), envFile = resolve(temp, 'empty.env'), persist = resolve(temp, 'state');
   const config = { name: 'food4u-e2e-018', compatibility_date: built.compatibility_date, compatibility_flags: built.compatibility_flags,
     main, no_bundle: true, rules: built.rules, assets: { ...built.assets, directory: resolve(project, 'dist/client') },
-    vars: { API_BASE_URL: backendOrigin, JWT_ACCESS_TOKEN_EXPIRE_MINUTES: '30m', USER_SESSION_SECRET: 'synthetic-e2e-session-secret-018-12345', USER_COOKIE_SECRET: 'synthetic-e2e-cookie-secret-018-12345', JWT_SECRET_KEY: 'synthetic-e2e-jwt-secret-018-12345' },
+    vars: { API_BASE_URL: backendOrigin, JWT_ACCESS_TOKEN_EXPIRE_MINUTES: '30m', USER_SESSION_SECRET: 'synthetic-e2e-session-secret-018-12345', USER_COOKIE_SECRET: 'synthetic-e2e-cookie-secret-018-12345', JWT_SECRET_KEY: 'synthetic-e2e-jwt-secret-018-12345',
+      SESSION_STORE: 'neon', SESSION_DATABASE_URL: 'postgresql://food4u_web:synthetic-e2e@fake-neon.e2e/neondb', NEON_FETCH_ENDPOINT: `${backendOrigin}/sql` },
     kv_namespaces: [{ binding: 'cloudflare_KV', id: '01801801801801801801801801801801', remote: false }],
     d1_databases: [{ binding: 'cloudflare_db', database_name: 'food4u-e2e-018', database_id: randomUUID(), remote: false }],
   };
@@ -139,7 +156,7 @@ try {
     dev: { remote: false, server: { hostname: '127.0.0.1', port: 0 }, inspector: { hostname: '127.0.0.1', port: 0 }, watch: false,
       persist, registry: undefined, outboundService: guard, enableContainers: false, generateTypes: false } });
   await worker.ready;
-  process.send({ type: 'ready', base: (await worker.url).origin, proxy: `http://127.0.0.1:${proxy.address().port}` });
+  process.send({ type: 'ready', base: (await worker.url).origin, proxy: `http://127.0.0.1:${proxy.address().port}`, harness: backendOrigin });
   await new Promise(ok => {
     process.once('message', message => { if (message.type === 'stop') ok(); });
     process.once('disconnect', ok);
@@ -152,6 +169,7 @@ finally {
     if (worker) await worker.dispose();
     if (backend) await close(backend);
     if (proxy) await close(proxy);
+    if (neonFake) await neonFake.close();
     const after = await ownerHashes();
     assert.deepEqual(after, before, 'owner files unchanged byte-for-byte');
     assert.equal(onrender, 0); assert.equal(redirectHits, 0);
@@ -159,6 +177,7 @@ finally {
     await writeFile(resolve(artifacts, '018-isolation.json'), JSON.stringify({ before, after, owner_hashes_unchanged: true,
       server_onrender_requests: onrender, redirect_destination_hits: redirectHits, external_deny_canary: true,
       browser_deny_proxy_connections: deniedProxy, outbound, backendCalls, private_local_d1_kv: true,
+      session_store: 'neon via local PGlite /sql', session_sql_requests: sqlRequests,
       error: failure?.message ?? null }, null, 2));
     console.log('ONRENDER_REQUESTS_OBSERVED=' + onrender);
   } catch (error) { failure ??= error; console.error(error); }

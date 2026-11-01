@@ -62,19 +62,22 @@ export default async function globalSetup() {
     assert.equal(code, 0, 'isolated runtime, egress and owner-hash teardown must pass');
   };
   try {
-    const ready = await new Promise<{ base: string; proxy: string }>((ok, reject) => {
+    const ready = await new Promise<{ base: string; proxy: string; harness: string }>((ok, reject) => {
       const timer = setTimeout(() => reject(new Error('Built Worker startup timed out; see 018-runtime.log')), 120_000);
       child.once('error', reject);
       child.once('exit', code => { clearTimeout(timer); reject(new Error(`Runtime exited ${code}; see 018-runtime.log`)); });
       child.on('message', (message: unknown) => {
         if (typeof message === 'object' && message !== null && 'type' in message && message.type === 'ready' &&
-          'base' in message && typeof message.base === 'string' && 'proxy' in message && typeof message.proxy === 'string') {
-          clearTimeout(timer); ok({ base: message.base, proxy: message.proxy });
+          'base' in message && typeof message.base === 'string' && 'proxy' in message && typeof message.proxy === 'string' &&
+          'harness' in message && typeof message.harness === 'string') {
+          clearTimeout(timer); ok({ base: message.base, proxy: message.proxy, harness: message.harness });
         }
       });
     });
     process.env.E2E_BASE_URL = ready.base;
     process.env.E2E_PROXY_URL = ready.proxy;
+    // Session database probes for sessions.spec.ts; called from the test process only.
+    process.env.E2E_HARNESS_URL = ready.harness;
   } catch (error) { await stop(); throw error; }
   return stop;
 }

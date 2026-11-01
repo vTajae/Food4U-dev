@@ -99,8 +99,9 @@ async function run(command, args, cwd, filename, env = {}) {
 }
 try {
   // Replace only any local override line; every original byte is restored finally.
-  const text = original.toString('utf8').replace(/^API_BASE_URL\s*=.*(?:\r?\n|$)/gm, '');
-  await writeFile(varsPath, `${text}\nAPI_BASE_URL="http://127.0.0.1:9"\n`);
+  // Sessions stay in Miniflare's local KV: this suite must never reach a real database.
+  const text = original.toString('utf8').replace(/^(API_BASE_URL|SESSION_STORE|SESSION_DATABASE_URL|NEON_FETCH_ENDPOINT)\s*=.*(?:\r?\n|$)/gm, '');
+  await writeFile(varsPath, `${text}\nAPI_BASE_URL="http://127.0.0.1:9"\nSESSION_STORE="kv"\n`);
   await writeFile(configPath, config, { flag: 'wx' });
   await writeFile(resolve(evidence, '004-next-dev.log'), '');
   child = spawn(process.execPath, [resolve(frontend, 'node_modules/vite/bin/vite.js'), '--config', configPath], {

@@ -5,7 +5,7 @@ import { env } from "cloudflare:workers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import UserService from "~/api/services/userService";
-import { commitSession, getSession } from "~/lib/session";
+import { commitSession, getSession, startSession } from "~/lib/session";
 
 const credentials = z.object({
   username: z.string().email("Enter a valid email address.").trim(),
@@ -49,11 +49,16 @@ export async function authenticate(
     return { status: "error", message: result.message || "Invalid email or password." };
   }
 
-  const session = await getSession();
-  session.data.auth = result.user;
-  session.data.token = result.token;
-  await commitSession(session);
-  // Login depends on D1 only. The backend profile is ensured by the dashboard,
+  try {
+    // Every sign-in gets a fresh session id (no session fixation). An anonymous
+    // session's flags, such as the post-signup welcome step, carry over.
+    const previous = await getSession();
+    await startSession({ ...(previous.data.auth ? {} : previous.data), auth: result.user, token: result.token });
+  } catch (error) {
+    console.error("Sign-in could not start a session:", (error as Error).name);
+    return { status: "error", message: "We couldn't sign you in right now. Please try again." };
+  }
+  // Login depends on D1 and the session store only. The backend profile is ensured by the dashboard,
   // which can show a proper "service unavailable" state if the backend is asleep.
   redirect("/dashboard");
 }

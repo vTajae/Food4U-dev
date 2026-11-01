@@ -33,6 +33,14 @@ _Updated 2026-11-01._
 - Screenshots in `sprint/screenshots/` show the old landing copy; regenerate before publishing any.
 - `support@food4u.app` (privacy page, app shell footer, pinned by `contract/pages-api.mjs`): the domain is not registered, so mail bounces and anyone could register it. Decide on an address you control, or register the domain.
 
+## Security follow-ups from the PR #26 review (not public issues until fixed)
+
+- `frontend/lib/session-store.ts` upsert: a request that read a session before logout can write it back with 30 fresh days, so a stolen cookie can undo a sign-out (KV behaved the same). Fix: `UPDATE … WHERE id_hash=$1 AND expires_at > now()` for existing ids, 0 rows = signed out; `INSERT` only for new ids.
+- Session `data` (backend JWT, email, `auth.id`) is stored in plain text; the owner role could rewrite `auth.id`. Mitigated by the `food4u_web` least-privilege role at rollout; stronger fix is AES-GCM with a key derived from the raw cookie id.
+- Expiry slides forward on every write and `created_at` is never checked, so a cookie in constant use never expires. Fix: bound `read` by `created_at`.
+- Logout store failure leaves the row valid and the user uninformed; sign-up without a cookie writes a Neon row (anonymous traffic can wake the database, contrary to ADR 0003's wording).
+- Fixed in the merge: malformed `SESSION_DATABASE_URL` no longer echoes the connection string; `NEON_FETCH_ENDPOINT` must be loopback; sign-in session failures are logged by error name.
+
 ## Open defects
 
 See `e2e/DEFECTS.md`: D018-02, D018-03, D018-07, D018-09, D018-10, D018-11.

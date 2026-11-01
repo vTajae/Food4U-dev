@@ -9,6 +9,6 @@ The backend used CockroachDB with Cockroach-specific migrations. We moved profil
 
 ## Consequences
 
-- Login sessions are also moving from Workers KV to Neon (pull request in review), because KV's free tier allows about a thousand writes a day and every login is a write.
+- Login sessions also move from Workers KV to Neon (code landed; production switches when `SESSION_DATABASE_URL` is set), because KV's free tier allows about a thousand writes a day and every login is a write.
 - Neon Free suspends compute at its monthly limit; anonymous traffic must never touch it, and the backend's health check does not open a database session.
 - The old Cockroach migration is not run on Neon; a fresh database is built by startup `create_all`.

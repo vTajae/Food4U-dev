@@ -19,7 +19,10 @@ async def main():
             rows = await conn.fetch('DELETE FROM public.profile WHERE public_id = $1 RETURNING id', data['id'])
             if len(rows) > 1:
                 raise ValueError('ambiguous identity')
-        print(len(rows))
+            sessions = []
+            if await conn.fetchval("SELECT to_regclass('web_session.session') IS NOT NULL"):
+                sessions = await conn.fetch('DELETE FROM web_session.session WHERE user_public_id = $1 RETURNING 1', data['id'])
+        print(json.dumps({'profiles': len(rows), 'sessions': len(sessions)}))
     finally:
         await conn.close()
 try:
@@ -40,13 +43,12 @@ async function deleteProfile(id, run) {
   if (!['postgres:', 'postgresql:'].includes(url.protocol) || url.hostname.includes('-pooler')) throw new Error('direct URL required');
   const python = process.env.PYTHON ?? resolve(root, 'backend/.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
   if (!process.env.PYTHON && !existsSync(python)) throw new Error('backend venv required');
-  const count = await run(python, ['-c', deletePython], { input: JSON.stringify({ url: url.href, id }) });
-  if (!/^[01]$/.test(count)) throw new Error('invalid delete count');
-  return Number(count);
+  const counts = JSON.parse(await run(python, ['-c', deletePython], { input: JSON.stringify({ url: url.href, id }) }));
+  return { profiles: counts.profiles, sessions: counts.sessions };
 }
 
 export async function main(args, { run = runCommand, write = console.log, deleteProfile: removeProfile = id => deleteProfile(id, run) } = {}) {
-  let neon = 0, d1 = 0, reason = 'cleanup failed; no upstream error details are printed';
+  let neon = 0, d1 = 0, sessions = 0, reason = 'cleanup failed; no upstream error details are printed';
   try {
     if (args.length !== 2 || args[0] !== '--public-id' || !/^[A-Za-z0-9-]{1,80}$/.test(args[1])) {
       reason = 'use --public-id with one stable public ID';
@@ -59,17 +61,19 @@ export async function main(args, { run = runCommand, write = console.log, delete
         reason = 'refused: D1 identity is not one live-check account';
         throw new Error('identity');
       }
-      neon = await removeProfile(id);
-      if (![0, 1].includes(neon)) throw new Error('invalid Neon count');
+      const removed = await removeProfile(id);
+      if (![0, 1].includes(removed?.profiles) || !Number.isInteger(removed?.sessions) || removed.sessions < 0) throw new Error('invalid Neon count');
+      neon = removed.profiles;
+      sessions = removed.sessions;
       // Re-check both identity fields in the write, not just the earlier lookup.
       const deleted = await d1Query(`DELETE FROM user WHERE public_id = '${id}' AND username = '${rows[0].username}' RETURNING public_id`, run);
       d1 = deleted.length;
       if (d1 !== 1) throw new Error('D1 identity changed; retry after inspection');
     }
-    write(`LIVE_CLEANUP ${JSON.stringify({ result: 'PASS', neon_profiles_deleted: neon, d1_users_deleted: d1 })}`);
+    write(`LIVE_CLEANUP ${JSON.stringify({ result: 'PASS', neon_profiles_deleted: neon, d1_users_deleted: d1, sessions_deleted: sessions })}`);
     return 0;
   } catch {
-    write(`LIVE_CLEANUP ${JSON.stringify({ result: 'FAIL', neon_profiles_deleted: neon, d1_users_deleted: d1, reason })}`);
+    write(`LIVE_CLEANUP ${JSON.stringify({ result: 'FAIL', neon_profiles_deleted: neon, d1_users_deleted: d1, sessions_deleted: sessions, reason })}`);
     return 1;
   }
 }
