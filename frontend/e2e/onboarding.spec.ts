@@ -56,7 +56,7 @@ test('D019-02 diet and every later answer survive reload after diet and at revie
 });
 
 test('D018-02 price review has an explicit currency', async ({ page, gate }) => {
-  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-02: raw 12.50 price chip; see internal/e2e/DEFECTS.md');
+  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-02: raw 12.50 price chip; https://github.com/vTajae/Food4U/issues/1');
   const user = email(); await register(page, user); await login(page, user);
   for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await page.getByRole('textbox', { name: 'What do you usually spend per meal?' }).fill('12.50');
@@ -108,7 +108,7 @@ test('019 identity switch never paints the previous account answers', async ({ p
 });
 
 test('D018-09 nonnumeric meal price cannot reach review', async ({ page, gate }) => {
-  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-09: price is not validated; see internal/e2e/DEFECTS.md');
+  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-09: price is not validated; https://github.com/vTajae/Food4U/issues/4');
   const user = email(); await register(page, user); await login(page, user);
   for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await page.getByRole('textbox', { name: 'What do you usually spend per meal?' }).fill('not money');

@@ -35,7 +35,7 @@ Passing automation is not a WCAG or medical-safety certification.
 
 ## Known defects
 
-Known defects are `test.fixme` annotations carrying an id (`D018-02`, `D018-03`, `D018-07`, `D018-09`, `D018-10`, `D018-11`), each tracked as a GitHub issue. A fixme is never a weakened gate: the test still describes the intended behavior and starts failing loudly once the product is fixed, which is the cue to remove the annotation.
+Known defects are `test.fixme` annotations carrying an id, each tracked as a GitHub issue: [D018-02](https://github.com/vTajae/Food4U/issues/1), [D018-03](https://github.com/vTajae/Food4U/issues/2), [D018-07](https://github.com/vTajae/Food4U/issues/3), [D018-09](https://github.com/vTajae/Food4U/issues/4), [D018-10](https://github.com/vTajae/Food4U/issues/5), [D018-11](https://github.com/vTajae/Food4U/issues/6). A fixme is never a weakened gate: the test still describes the intended behavior and starts failing loudly once the product is fixed, which is the cue to remove the annotation.
 
 ## The one tolerated network event
 
