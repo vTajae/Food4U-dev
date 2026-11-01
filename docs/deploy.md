@@ -2,7 +2,7 @@
 
 Run from the repository root. Production is the Worker `food4u-frontend` and the Render backend service; both read secrets from their platforms, never from the repository. Stop at any failed step.
 
-Prerequisites: a reviewed merge with CI green, Node 22+, system Chrome, the `wrangler` and `neon` CLIs signed in, and the Render CLI for a manual backend deploy. Export `NEON_PROJECT_ID` and `RENDER_SERVICE_ID` for your environment.
+Prerequisites: a reviewed merge with the local gates green, Node 22+, system Chrome, the `wrangler` and `neon` CLIs signed in, and the Render CLI for a manual backend deploy. Export `NEON_PROJECT_ID` and `RENDER_SERVICE_ID` for your environment.
 
 ## Order
 
