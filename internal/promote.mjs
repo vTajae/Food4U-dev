@@ -150,7 +150,8 @@ export async function main(argv, { prod = defaultProd, dev = devRoot, log = cons
   if (git(['status', '--porcelain'], prod)) throw new Error('production clone is not clean');
   git(['fetch', '-q', 'origin'], prod);
   const prodBase = git(['rev-parse', 'origin/main'], prod);
-  const baseline = flags.get('baseline') ?? (git(['log', '-1', '--format=%B', 'origin/main'], prod).match(MARKER)?.[1] ?? null);
+  const requested = flags.get('baseline') ?? (git(['log', '-1', '--format=%B', 'origin/main'], prod).match(MARKER)?.[1] ?? null);
+  const baseline = requested ? git(['rev-parse', '--verify', `${requested}^{commit}`], dev) : null;
   let publicChanges = [];
   if (baseline) {
     publicChanges = publicOnlyChanges({ dev, prod, baselineSha: baseline, allowlist });
