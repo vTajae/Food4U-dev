@@ -1,0 +1,343 @@
+diff --git a/.env.example b/.env.example
+new file mode 100644
+index 0000000..9e0ca1e
+--- /dev/null
++++ b/.env.example
+@@ -0,0 +1,8 @@
++# Settings for `docker compose` (copy to .env; ignored). Dev-only placeholders, never production values.
++POSTGRES_USER=food4u
++POSTGRES_PASSWORD=dev-only-postgres-password
++POSTGRES_DB=food4u
++# Must equal JWT_SECRET_KEY in frontend/.dev.vars.docker.
++USER_JWT_SECRET_KEY=dev-only-jwt-secret
++USER_JWT_ALGORITHM=HS256
++JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
+diff --git a/.gitignore b/.gitignore
+index 7c73a8a..eec6869 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -24,6 +24,7 @@ __pycache__/
+ .dev.vars
+ .dev.vars.*
+ !.dev.vars.example
++!.dev.vars.docker.example
+ .neon
+ **/.postgresql
+ 
+diff --git a/README.md b/README.md
+index abf415e..d741e69 100644
+--- a/README.md
++++ b/README.md
+@@ -57,7 +57,15 @@ docs/       Architecture, deploy, roadmap, safety design, ADRs
+ 
+ ## Running locally
+ 
+-Prerequisites: Node 22+, Python 3.11, a Neon project (free tier is enough), Google Chrome for the e2e suite.
++With Docker (Postgres, backend and the Worker dev server, dev-only settings, no Neon needed):
++
++```bash
++cp .env.example .env
++cp frontend/.dev.vars.docker.example frontend/.dev.vars.docker
++docker compose up -d --build --wait      # http://127.0.0.1:3001; details in docs/docker.md
++```
++
++Without Docker: Node 22+, Python 3.11, a Neon project (free tier is enough), Google Chrome for the e2e suite.
+ 
+ Frontend:
+ 
+diff --git a/backend/.dockerignore b/backend/.dockerignore
+new file mode 100644
+index 0000000..513a122
+--- /dev/null
++++ b/backend/.dockerignore
+@@ -0,0 +1,6 @@
++.venv*
++__pycache__
++*.pyc
++.env
++.env.*
++.pytest_cache
+diff --git a/backend/Dockerfile b/backend/Dockerfile
+new file mode 100644
+index 0000000..7db664c
+--- /dev/null
++++ b/backend/Dockerfile
+@@ -0,0 +1,13 @@
++FROM python:3.11-slim
++
++WORKDIR /app
++ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
++
++# requirements-dev.txt includes requirements.txt plus pytest, so the same image runs the tests.
++COPY requirements.txt requirements-dev.txt ./
++RUN pip install --no-cache-dir -r requirements-dev.txt
++
++COPY . .
++
++EXPOSE 8000
++CMD ["python", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
+diff --git a/backend/app/config/database.py b/backend/app/config/database.py
+index 21e36bc..eff52ad 100644
+--- a/backend/app/config/database.py
++++ b/backend/app/config/database.py
+@@ -34,8 +34,10 @@ class AsyncDatabaseSession:
+                 "Neon child branch (see docs/neon-setup.md)."
+             )
+         url = make_url(self.db_url)
+-        # libpq URL options are not asyncpg connect keywords. Always require
+-        # verified TLS, including hostname/SNI, rather than weakening it.
++        # libpq URL options are not asyncpg connect keywords. TLS is verified
++        # (hostname/SNI included) unless the URL says sslmode=disable, which only
++        # the local Docker network uses; Neon URLs never carry it.
++        plaintext = url.query.get("sslmode") == "disable"
+         url = url.set(drivername="postgresql+asyncpg").difference_update_query(
+             ["sslmode", "channel_binding"]
+         )
+@@ -48,7 +50,7 @@ class AsyncDatabaseSession:
+             pool_size=10,
+             max_overflow=20,
+             pool_pre_ping=True,
+-            connect_args={"ssl": ssl_context},
++            connect_args={} if plaintext else {"ssl": ssl_context},
+             isolation_level='AUTOCOMMIT'
+         )
+         self.session_factory = sessionmaker(
+diff --git a/backend/tests/conftest.py b/backend/tests/conftest.py
+index 540a152..9111620 100644
+--- a/backend/tests/conftest.py
++++ b/backend/tests/conftest.py
+@@ -1,8 +1,9 @@
+ """Environment defaults for no-database API tests; no import stubs needed."""
+ import os
+ 
+-os.environ.setdefault("USER_JWT_SECRET_KEY", "test-secret")
+-os.environ.setdefault("USER_JWT_ALGORITHM", "HS256")
++# Forced, not defaulted: the suite mints its own tokens and must not depend on the host's secret.
++os.environ["USER_JWT_SECRET_KEY"] = "test-secret"
++os.environ["USER_JWT_ALGORITHM"] = "HS256"
+ os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://u:p@localhost:5432/test")
+ # Retain optional config defaults; identity tests do not import the AI stack.
+ for _k, _v in {
+diff --git a/backend/tests/test_database_config.py b/backend/tests/test_database_config.py
+index 768c3d3..c30bbcc 100644
+--- a/backend/tests/test_database_config.py
++++ b/backend/tests/test_database_config.py
+@@ -37,6 +37,24 @@ def test_neon_url_builds_asyncpg_engine_with_verified_tls(scheme):
+     asyncio.run(database.close())
+ 
+ 
++def test_sslmode_disable_connects_without_tls_for_the_local_container_network():
++    database = AsyncDatabaseSession("postgresql://u:p@db:5432/food4u?sslmode=disable")
++    asyncio.run(database.init())
++    captured = {}
++    def capture(*args, **kwargs):
++        captured.update(kwargs)
++        raise RuntimeError("connection captured")
++    database.engine.sync_engine.dialect.connect = capture
++    async def connect():
++        with pytest.raises(RuntimeError, match="connection captured"):
++            async with database.engine.connect():
++                pass
++    asyncio.run(connect())
++    assert "ssl" not in captured
++    assert "sslmode" not in captured
++    asyncio.run(database.close())
++
++
+ def test_plain_asyncpg_url_keeps_database_and_query():
+     database = AsyncDatabaseSession("postgresql+asyncpg://u:p@localhost:5432/test?timeout=10")
+     asyncio.run(database.init())
+diff --git a/compose.yaml b/compose.yaml
+new file mode 100644
+index 0000000..b7759a0
+--- /dev/null
++++ b/compose.yaml
+@@ -0,0 +1,63 @@
++# Local dev/test stack: Postgres, the FastAPI backend and the Worker dev server.
++# Settings come from .env (copy .env.example) and frontend/.dev.vars.docker
++# (copy frontend/.dev.vars.docker.example). No credentials are baked into images.
++services:
++  db:
++    image: postgres:16-alpine
++    environment:
++      POSTGRES_USER: ${POSTGRES_USER}
++      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
++      POSTGRES_DB: ${POSTGRES_DB}
++    volumes:
++      - pgdata:/var/lib/postgresql/data
++    ports:
++      - "127.0.0.1:5432:5432"
++    healthcheck:
++      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
++      interval: 5s
++      timeout: 3s
++      retries: 10
++
++  backend:
++    build: ./backend
++    environment:
++      # sslmode=disable: the container network carries no TLS; see backend/app/config/database.py.
++      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
++      USER_JWT_SECRET_KEY: ${USER_JWT_SECRET_KEY}
++      USER_JWT_ALGORITHM: ${USER_JWT_ALGORITHM}
++      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
++    depends_on:
++      db:
++        condition: service_healthy
++    ports:
++      - "127.0.0.1:8000:8000"
++    healthcheck:
++      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
++      interval: 10s
++      timeout: 5s
++      retries: 12
++      start_period: 20s
++
++  frontend:
++    build: ./frontend
++    volumes:
++      - ./frontend:/app
++      - frontend_node_modules:/app/node_modules
++      - frontend_wrangler:/app/.wrangler
++      - ./frontend/.dev.vars.docker:/app/.dev.vars:ro
++    depends_on:
++      backend:
++        condition: service_healthy
++    ports:
++      - "127.0.0.1:3001:3001"
++    healthcheck:
++      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/login').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
++      interval: 10s
++      timeout: 5s
++      retries: 18
++      start_period: 30s
++
++volumes:
++  pgdata:
++  frontend_node_modules:
++  frontend_wrangler:
+diff --git a/docs/README.md b/docs/README.md
+index aac019c..5d16ed9 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -5,6 +5,7 @@
+ | [architecture.md](architecture.md) | The two services, the identity flow, request paths, data stores, failure behavior |
+ | [roadmap.md](roadmap.md) | Sprint 1 items and the product phases, with their real status |
+ | [safety-design.md](safety-design.md) | The deterministic safety layer as designed; not built yet |
++| [docker.md](docker.md) | Local Docker stack: Postgres, backend, Worker dev server; start, check, test, reset |
+ | [deploy.md](deploy.md) | Deploy order, secrets, post-deploy checks, rollback |
+ | [neon-setup.md](neon-setup.md) | Neon Postgres: environment, pooling, short-lived branches for local work |
+ | [adr/](adr/) | Architecture decision records |
+diff --git a/docs/docker.md b/docs/docker.md
+new file mode 100644
+index 0000000..0a10e40
+--- /dev/null
++++ b/docs/docker.md
+@@ -0,0 +1,57 @@
++# Docker: local dev and test stack
++
++`compose.yaml` runs Postgres, the FastAPI backend and the Worker dev server on the local Docker engine. It is for development and tests only; production stays on Render, Cloudflare and Neon, and nothing here touches them.
++
++| Service | Image | Port on the host | Data |
++|---|---|---|---|
++| `db` | `postgres:16-alpine` | `127.0.0.1:5432` | volume `pgdata` |
++| `backend` | `backend/Dockerfile` (python:3.11-slim) | `127.0.0.1:8000` | none |
++| `frontend` | `frontend/Dockerfile` (node:22) | `127.0.0.1:3001` | volumes `frontend_node_modules`, `frontend_wrangler` (local D1 and KV) |
++
++Credentials never enter an image: the services read `.env` (copied from `.env.example`) and `frontend/.dev.vars.docker` (copied from `frontend/.dev.vars.docker.example`), both ignored by git and both dev-only placeholders. The backend connects to the `db` service with `sslmode=disable`, which `backend/app/config/database.py` honors only when the URL says so; every other URL gets verified TLS.
++
++## Start
++
++```sh
++cp .env.example .env
++cp frontend/.dev.vars.docker.example frontend/.dev.vars.docker
++docker compose up -d --build --wait        # waits for all three health checks
++```
++
++Once per fresh `frontend_wrangler` volume, create the local D1 user table (it drops and recreates that table, so never point it at production):
++
++```sh
++docker compose exec frontend npm run d1:local-initialize
++```
++
++Then open http://127.0.0.1:3001. The backend's OpenAPI page is at http://127.0.0.1:8000/docs. The frontend container bind-mounts `frontend/`, so edits on the host reload in the container; its Linux `node_modules` live in a named volume and never mix with the Windows copy.
++
++## Check
++
++```sh
++docker compose ps                                           # all healthy
++curl -s http://127.0.0.1:8000/health                        # {"status":"ok"}
++docker compose exec db psql -U food4u -d food4u -c '\dt'    # tables created by the backend at startup
++```
++
++## Test inside the containers
++
++```sh
++docker compose run --rm backend python -m pytest tests -q   # no database needed
++docker compose run --rm frontend npm test                   # unit tests
++```
++
++The real-Chrome e2e suite and the contract suite need a system Chrome and run on the host, not in a container.
++
++## Stop and reset
++
++```sh
++docker compose down            # stops containers; pgdata and the other volumes survive
++docker compose down --volumes  # also deletes the database and local D1/KV state; dev data only
++```
++
++## Limits
++
++- The frontend container runs `vite dev`; the production Worker is built and deployed by `npm run deploy` from the host (see `deploy.md`).
++- The AI suggestion path is not configured here, so `POST /api/suggestion` answers 503, as in production.
++- Health checks prove the processes answer; they are not a substitute for the test suites.
+diff --git a/frontend/.dev.vars.docker.example b/frontend/.dev.vars.docker.example
+new file mode 100644
+index 0000000..89966e5
+--- /dev/null
++++ b/frontend/.dev.vars.docker.example
+@@ -0,0 +1,8 @@
++# Local Worker settings for `docker compose` (copy to .dev.vars.docker; ignored).
++# Every value is a DEV-ONLY placeholder. JWT_SECRET_KEY must equal the backend's
++# USER_JWT_SECRET_KEY in the root .env.
++USER_SESSION_SECRET=dev-only-session-secret
++USER_COOKIE_SECRET=dev-only-cookie-secret
++JWT_SECRET_KEY=dev-only-jwt-secret
++# The backend container, reachable by its Compose service name.
++API_BASE_URL=http://backend:8000
+diff --git a/frontend/.dockerignore b/frontend/.dockerignore
+new file mode 100644
+index 0000000..80e9161
+--- /dev/null
++++ b/frontend/.dockerignore
+@@ -0,0 +1,12 @@
++node_modules
++dist
++.wrangler
++.vinext
++.next
++.dev.vars
++.dev.vars.*
++!.dev.vars.example
++!.dev.vars.docker.example
++e2e/.artifacts
++playwright-report
++test-results
+diff --git a/frontend/Dockerfile b/frontend/Dockerfile
+new file mode 100644
+index 0000000..edcfb11
+--- /dev/null
++++ b/frontend/Dockerfile
+@@ -0,0 +1,12 @@
++FROM node:22-bookworm-slim
++
++WORKDIR /app
++
++# Linux node_modules live in the image (and a named volume); the Windows host copy is never used.
++COPY package.json package-lock.json ./
++RUN npm ci --no-audit --no-fund
++
++COPY . .
++
++EXPOSE 3001
++CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3001"]
