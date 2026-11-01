@@ -7,8 +7,7 @@ export interface ConditionVocabularyEntry {
 
 // Official names verified 2026-10-17 against NLM Clinical Tables:
 // https://clinicaltables.nlm.nih.gov/apidoc/icd10cm/v3/doc.html
-// Educational copy: NIH/NIDDK, MedlinePlus and FDA; source receipts are in
-// .cockpit/20261013-neon/artifacts/017-medical-sources.json.
+// Educational copy: NIH/NIDDK, MedlinePlus and FDA.
 // Keep officialName for persistence; label and learn are presentation only.
 export const conditionsByCode: Readonly<Record<string, ConditionVocabularyEntry>> = {
   "E11.9": {"code":"E11.9","officialName":"Type 2 diabetes mellitus without complications","label":"Type 2 diabetes","learn":"Your blood sugar is too high because your body does not make enough insulin or use it well."},

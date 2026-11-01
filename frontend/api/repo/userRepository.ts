@@ -44,9 +44,9 @@ class UserRepository {
         )
         .run();
       return results.meta.last_row_id;
-    } catch (e: any) {
+    } catch (e) {
       console.error({
-        message: e.message,
+        message: (e as Error).message,
       });
     }
   }
@@ -70,9 +70,9 @@ class UserRepository {
         )
         .run();
       return results.meta.last_row_id;
-    } catch (e: any) {
+    } catch (e) {
       console.error({
-        message: e.message,
+        message: (e as Error).message,
       });
     }
   }

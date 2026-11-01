@@ -12,6 +12,9 @@ interface AutocompleteResult {
   name: string;
 }
 
+// NLM Clinical Tables v3 search response: [total, codes, extra fields, display rows].
+type ClinicalTablesResponse = [number, string[], { icd10cm?: Icd10Result[][] } | null, string[][]];
+
 export class ClinicalService {
   private static readonly BASE_API_URL = "https://clinicaltables.nlm.nih.gov/api/";
 
@@ -32,7 +35,7 @@ export class ClinicalService {
     displayFields?: string | string[],
     maxResults: number = 50,
     extraFields?: Record<string, string>
-  ): Promise<any> {
+  ): Promise<ClinicalTablesResponse | null> {
     const params = new URLSearchParams({
       terms: query,
       maxList: maxResults.toString(),
@@ -65,8 +68,7 @@ export class ClinicalService {
         throw new Error(`Error fetching data from ${route}: ${response.statusText}`);
       }
   
-      const data = await response.json();
-      return data;
+      return (await response.json()) as ClinicalTablesResponse;
     } catch (error) {
       console.error(`Error fetching data from ${route}:`, error);
       return null;

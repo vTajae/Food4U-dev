@@ -1,26 +1,17 @@
 {
+  "private": true,
   "dependencies": {
-    "@neon/config": "^1.9.1",
-    "@neon/env": "^1.6.1",
-    "concurrent": "^0.3.2"
+    "@neon/config": "^1.9.1"
   },
   "scripts": {
-    "e2e": "npm --prefix frontend run e2e --",
     "test": "node --test scripts/tests/*.test.mjs",
+    "e2e": "npm --prefix frontend run e2e --",
+    "lint": "npm --prefix frontend run lint",
+    "typecheck": "npm --prefix frontend run typecheck",
+    "build": "npm --prefix frontend run build",
+    "dev:frontend": "npm --prefix frontend run dev",
     "check:live": "node scripts/live-check.mjs",
     "check:d1": "node scripts/check-d1-schema.mjs",
-    "cleanup:live": "node scripts/delete-live-check-account.mjs",
-    "build": "npm run build:frontend",
-    "build:frontend": "cd frontend && npm run build",
-    "build-it-up": "npx concurrently \"npm run setup:frontend\" \"npm run setup:backend\"",
-    "start-it-up": "npx concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "dev:frontend": "cd frontend && npm run dev",
-    "setup:backend": "cd backend && . env/bin/activate && pip3 install -r requirements.txt && pip install --upgrade pip",
-    "dev:backend": "node -e \"if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set; select a short-lived Neon child branch (docs/neon-setup.md)')\" && cd backend && . env/bin/activate && pip3 install -r requirements.txt && pip install --upgrade pip && fastapi dev server.py",
-    "lint": "cd frontend && npm run lint",
-    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
-    "start:frontend": "cd frontend && npm run start",
-    "start:backend": "node -e \"if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set; select a short-lived Neon child branch (docs/neon-setup.md)')\" && cd backend && fastapi dev server.py",
-    "typecheck": "cd frontend && npm run typecheck"
+    "cleanup:live": "node scripts/delete-live-check-account.mjs"
   }
 }

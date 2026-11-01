@@ -66,7 +66,7 @@ export function observe(page: Page, origin: string, expected: { fault?: string; 
     if (url.origin !== origin) return;
     const headers = request.headers();
     const responseAt = componentResponses.get(request.url());
-    // D019-01 / OMC Addendum 1: only a live RSC stream with an earlier,
+    // D019-01: only a live RSC stream with an earlier,
     // exact-URL successful component response may wait for the committed URL.
     if (request.method() === 'GET' && headers.rsc === '1' && !Object.hasOwn(headers, 'next-router-prefetch') &&
       request.failure()?.errorText === 'net::ERR_ABORTED' && responseAt !== undefined) {

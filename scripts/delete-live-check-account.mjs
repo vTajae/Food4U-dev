@@ -3,7 +3,8 @@ import { resolve } from 'node:path';
 import { d1Query, isMain, root, runCommand } from './post-deploy-common.mjs';
 
 const liveUsername = /^livecheck-\d+.*@food4u\.test$/;
-const project = 'patient-cherry-72346680';
+// Per-environment setting, like the Worker and backend URLs; not a secret.
+const project = process.env.NEON_PROJECT_ID;
 
 // Uses the backend's existing asyncpg, not a new Node database dependency.
 // The URL is passed on stdin, never in argv, logs, a file, or a traceback.
@@ -30,6 +31,7 @@ except Exception:
 async function deleteProfile(id, run) {
   let direct = process.env.NEON_DIRECT_URL;
   if (!direct) {
+    if (!project) throw new Error('NEON_PROJECT_ID or NEON_DIRECT_URL required');
     const command = process.platform === 'win32' ? process.execPath : 'neon';
     const prefix = process.platform === 'win32' ? [resolve(process.env.APPDATA ?? '', 'npm/node_modules/neon/dist/cli.js')] : [];
     direct = await run(command, [...prefix, 'connection-string', 'production', '--project-id', project]);
