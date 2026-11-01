@@ -16,10 +16,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             Know what you can eat tonight.
           </h1>
           <p className="hidden text-body-lg text-ink-muted lg:block">
-            Ask in plain words. Every suggestion is checked against the things that
-            matter for you, and you can see exactly what was checked.
+            Ask in plain words. Your conditions, allergies, diet and budget are saved to
+            your profile. Automatic safety checks are still in development, so treat
+            every idea as a starting point, not advice.
           </p>
-          <ul className="hidden flex-col gap-3 lg:flex" aria-label="What Food4U checks against">
+          <ul className="hidden flex-col gap-3 lg:flex" aria-label="What your profile records">
             {checks.map((item) => (
               <li key={item} className="flex items-center gap-3 text-body-md text-ink">
                 <CircleCheck aria-hidden="true" className="size-5 shrink-0 text-fits" />

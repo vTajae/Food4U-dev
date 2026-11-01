@@ -4,6 +4,9 @@ import { credentials, email, login, register, choose } from './journeys';
 test('register, duplicate account, validation, login and logout', async ({ page, gate }, info) => {
   await page.goto('/');
   await expect(page).toHaveURL(/\/login$/);
+  // No safety layer exists yet; the login promise must not claim one (hidden copy counts too).
+  await expect(page.getByText(/every suggestion is checked/i)).toHaveCount(0);
+  await expect(page.locator('ul[aria-label="What your profile records"]')).toHaveCount(1);
   await gate.check('root-login');
   await page.getByRole('button', { name: 'Log in', exact: true }).click();
   await expect(page.getByText('Enter a valid email address.', { exact: true })).toBeVisible();

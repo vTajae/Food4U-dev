@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from app.api.dependencies.auth_dep import verified_public_id
 from app.api.routers import user_routes, fdc_routes, spoon_routes, suggestion_routes
 from app.config.database import async_database_session
 from app.config.diet_seed import seed_diet_types
@@ -59,8 +60,9 @@ async def health():
 
 # Registering all routes
 app.include_router(user_routes.router)
-app.include_router(fdc_routes.router)
-app.include_router(spoon_routes.router)
+# The upstream food APIs are metered; a verified bearer is required before any client is built.
+app.include_router(fdc_routes.router, dependencies=[Depends(verified_public_id)])
+app.include_router(spoon_routes.router, dependencies=[Depends(verified_public_id)])
 app.include_router(suggestion_routes.router)
 
 
