@@ -1,0 +1,29 @@
+# One case-insensitive regular expression per line. Any hit in an exported text file stops the promotion.
+# Internal tooling and process narration
+\bcockpit\b
+\.cockpit
+\bOMC\b
+\bOMX\b
+openbrain
+\bnobu\b
+\bclaude\b
+# Private paths
+\binternal/
+\brust-app\b
+# People and accounts
+tajae
+qiasme
+qias\.webdev@
+someone special
+# Infrastructure identifiers and local machine paths
+patient-cherry
+\bsrv-[a-z0-9]{20}\b
+\biseem\b
+[A-Za-z]:\\
+# Secret shapes
+AIza[0-9A-Za-z_-]{20,}
+\bnpg_[A-Za-z0-9]{10,}
+\bsk-[A-Za-z0-9]{20,}
+\bgh[pousr]_[A-Za-z0-9]{20,}
+-----BEGIN [A-Z ]*PRIVATE KEY-----
+://[^:\s/]+:[^@\s]{8,}@
