@@ -22,6 +22,10 @@ test('signing in rotates the session; the pre-login cookie never signs in', asyn
   const preLogin = await sessionCookie(page);
   expect(preLogin, 'registration starts an anonymous session').toBeDefined();
   await login(page, user);
+  // login() returns at /dashboard; a fresh account is then server-redirected to
+  // /welcome. Gate only once that page has committed, or the redirect's aborted
+  // RSC fetch (D019-01) is still unsettled and the gate rejects it.
+  await expect(page.getByRole('heading', { name: 'Tell us about you' })).toBeVisible();
   const signedIn = await sessionCookie(page);
   expect(signedIn?.value).not.toBe(preLogin!.value);
   await gate.check('020-rotated');
@@ -33,6 +37,7 @@ test('signing in rotates the session; the pre-login cookie never signs in', asyn
   await page.context().addCookies([signedIn!]);
   await page.goto('/dashboard');
   await expect(page).toHaveURL(/\/(dashboard|welcome)$/);
+  await expect(page.getByRole('heading', { name: 'Tell us about you' })).toBeVisible();
   await gate.check('020-signed-in-cookie-still-valid');
 });
 
