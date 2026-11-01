@@ -33,7 +33,7 @@ Remove-Item Env:DATABASE_URL
 
 Bash: `export DATABASE_URL="$(neon connection-string "$name" --project-id "$NEON_PROJECT_ID" --pooled)"`, then `unset DATABASE_URL` afterwards.
 
-Startup `create_all` builds the schema on a fresh branch. The SQL under `backend/migrations/` is for databases that already exist and is applied by hand.
+Startup `create_all` builds the schema on a fresh branch. `backend/migrations/0001_profile_public_id.sql` is the CockroachDB-era migration, kept for history; it is not run on Neon.
 
 ## Local end-to-end loop
 

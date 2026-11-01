@@ -307,7 +307,7 @@ This file is the single source of truth for how the Food4U frontend looks, reads
 
 ## Overview
 
-**Subject.** Food4U helps people with dietary restrictions and medical conditions decide what to eat. Its first and most demanding user is someone managing Crohn's disease, so the system is designed for that case, and everyone else (allergies, diabetes, religious or ethical diets) is served by the same rules. Someone asks in plain words ("something soft for dinner, I'm flaring"). Food4U answers with meals and recipes checked against that person's conditions, allergies, diet and budget. Later phases add meal plans, grocery lists, carts and delivery. The product's core value, from the upgrade plan, is *decision compression*: hours of cross-checking become one answer you can trust.
+**Subject.** Food4U helps people with dietary restrictions and medical conditions decide what to eat. Its most demanding case is a person managing Crohn's disease, so the system is designed for that case, and everyone else (allergies, diabetes, religious or ethical diets) is served by the same rules. Someone asks in plain words ("something soft for dinner, I'm flaring"). Food4U is designed to answer with meals and recipes checked against that person's conditions, allergies, diet and budget; the check itself is still being built (`docs/safety-design.md`). Later phases add meal plans, grocery lists, carts and delivery. The product's core value is *decision compression*: hours of cross-checking become one answer you can trust.
 
 **Audience and context.** The user is often tired, in pain or anxious, usually on a phone, sometimes late at night, and has been burned by generic advice before. They are not browsing for fun. Each screen has one job: **give a trustworthy answer fast, and show why it can be trusted.**
 
@@ -315,9 +315,9 @@ This file is the single source of truth for how the Food4U frontend looks, reads
 
 **Concept: "Pantry Label".** In this person's world, the label is what decides whether a food is safe: ingredients panels, nutrition facts, the pharmacy sticker that says how a medicine was dispensed. Food4U takes that object as its one visual idea. Everything else stays quiet so the label can carry the meaning.
 
-**Signature element: the Check strip.** Every recommendation card ends with a strip that reads like a dispensing label. It sits on a dashed "tear line", is set in a monospace caps label, and lists exactly what the suggestion was checked against: `CHECKED AGAINST  Crohn's disease · Low residue · No dairy · Under $12`. It turns the backend's safety validation into something the user can see. It is the one place this system spends its boldness. Do not copy its styling anywhere else.
+**Signature element: the Check strip.** Every recommendation card ends with a strip that reads like a dispensing label. It sits on a dashed "tear line", is set in a monospace caps label, and lists exactly what the suggestion was checked against: `CHECKED AGAINST  Crohn's disease · Low residue · No dairy · Under $12`. It turns the planned safety validation into something the user can see, and renders only when a real verdict exists. It is the one place this system spends its boldness. Do not copy its styling anywhere else.
 
-**What this replaces.** The current UI has three unrelated visual languages: a cyan→blue gradient dashboard with white text, dark `gray-800` login inputs with a scaling green gradient button, and a plain `gray-50` onboarding page. It has no design tokens, no navigation and no ARIA. This system replaces all three.
+**What this replaced.** The 2024 hackathon UI had three unrelated visual languages: a cyan→blue gradient dashboard with white text, dark `gray-800` login inputs with a scaling green gradient button, and a plain `gray-50` onboarding page. It had no design tokens, no navigation and no ARIA. This system replaced all three.
 
 ## Colors
 
@@ -377,7 +377,7 @@ Type is chosen for reading under strain first and character second.
 - Sentence case everywhere. Only `data-caps` is uppercase.
 - Line length for prose is capped at `reading-max` (640px).
 
-Load the fonts through Remix's `links` export from Google Fonts with `display=swap`, and preconnect to `fonts.gstatic.com`. Fallback stacks: `"Atkinson Hyperlegible Next", system-ui, sans-serif`, `"Young Serif", Georgia, serif` and `"Atkinson Hyperlegible Mono", ui-monospace, monospace`.
+Load the fonts with `<link>` tags in `app/layout.tsx` from Google Fonts with `display=swap`, and preconnect to `fonts.gstatic.com`. Fallback stacks: `"Atkinson Hyperlegible Next", system-ui, sans-serif`, `"Young Serif", Georgia, serif` and `"Atkinson Hyperlegible Mono", ui-monospace, monospace`.
 
 ## Layout
 
@@ -388,7 +388,7 @@ Load the fonts through Remix's `links` export from Google Fonts with `display=sw
 - **Tap targets:** at least `tap-min` 44×44px, including chip remove buttons and icon buttons.
 
 ### App shell
-The app currently has no navigation and no way to sign out. Every authenticated route renders inside one shell:
+Every authenticated route renders inside one shell:
 
 ```
 Desktop (≥1024px)                          Mobile (<1024px)

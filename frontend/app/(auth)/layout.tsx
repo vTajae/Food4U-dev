@@ -1,7 +1,7 @@
 import { CircleCheck } from "lucide-react";
 import { Brand } from "~/components/brand";
 
-// Two-pane auth layout (takeaway T3): promise on the left, form on the right.
+// Two-pane auth layout: promise on the left, form on the right.
 // On phones the left pane collapses to the brand and a one-line promise.
 const checks = ["Your conditions", "Allergies and intolerances", "Diet and budget"];
 

@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 
 import server
 from app.api.dependencies import auth_dep, fdc_dep, spoon_dep
+from app.api.routers import user_routes
 
 
 @pytest.fixture
@@ -30,6 +31,7 @@ def client(monkeypatch):
 
     server.app.dependency_overrides[fdc_dep.get_fdc_service] = never
     server.app.dependency_overrides[spoon_dep.get_spoon_service] = never
+    server.app.dependency_overrides[user_routes.get_preference_service] = never
     yield TestClient(server.app)  # no `with`: startup (and its database work) stays off
     server.app.dependency_overrides.clear()
 
@@ -48,6 +50,12 @@ def test_anonymous_fdc_request_is_refused_before_any_client_is_built(client):
 
 def test_anonymous_spoonacular_request_is_refused_before_any_client_is_built(client):
     response = client.post("/spoon/misc/detect-food-in-text", params={"text": "two eggs"})
+    assert response.status_code == 403
+    assert response.json() == {"detail": "No authentication token found"}
+
+
+def test_anonymous_diet_type_creation_is_refused(client):
+    response = client.post("/diet-types/", json={"name": "anything", "description": "written by a stranger"})
     assert response.status_code == 403
     assert response.json() == {"detail": "No authentication token found"}
 

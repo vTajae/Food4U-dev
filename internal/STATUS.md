@@ -31,6 +31,7 @@ _Updated 2026-11-01._
 - Revoke the two Lucid invite links in `history/notes/06-diagram-links.md`.
 - Remove the Netlify `thefoodproject` check from both GitHub repos.
 - Screenshots in `sprint/screenshots/` show the old landing copy; regenerate before publishing any.
+- `support@food4u.app` (privacy page, app shell footer, pinned by `contract/pages-api.mjs`): the domain is not registered, so mail bounces and anyone could register it. Decide on an address you control, or register the domain.
 
 ## Open defects
 

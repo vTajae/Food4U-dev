@@ -6,7 +6,7 @@ from fastapi import APIRouter, Body, Query
 from fastapi import Depends, HTTPException, Request
 from jwt.exceptions import ExpiredSignatureError, PyJWTError
 from jwt import decode
-from app.api.dependencies.auth_dep import bearer_token, get_current_user, public_id_from_claims
+from app.api.dependencies.auth_dep import bearer_token, get_current_user, public_id_from_claims, verified_public_id
 from app.api.dependencies.user_dep import get_user_service
 from app.api.schemas.food4u.user import UserModel
 from app.api.services.user_service import UserService
@@ -164,7 +164,7 @@ async def refs(
     return data
 
 
-@router.post("/diet-types/", response_model=DietTypeResponse)
+@router.post("/diet-types/", response_model=DietTypeResponse, dependencies=[Depends(verified_public_id)])
 async def create_diet_type(
     diet_type_data: DietTypeCreate,
     preferences_service: PreferenceService = Depends(get_preference_service),

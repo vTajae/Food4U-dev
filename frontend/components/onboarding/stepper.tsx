@@ -26,7 +26,7 @@ const questions: Question[] = [
   { questionId: 555, questionText: "What do you usually spend per meal?", queryKey: "price" },
 ];
 
-// Onboarding stepper (takeaway T6): one question per screen, progress, review.
+// Onboarding stepper: one question per screen, progress, review.
 export function OnboardingStepper() {
   const { state, goToNextStep, goToPreviousStep, clearCurrentDraft } = useFormContext();
   const [pending, startTransition] = useTransition();

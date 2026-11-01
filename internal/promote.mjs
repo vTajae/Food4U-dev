@@ -30,7 +30,6 @@ export function scanForMarkers(files, patterns, read) {
     const bytes = read(file);
     if (bytes.includes(0)) continue; // binary
     bytes.toString('utf8').split('\n').forEach((line, index) => {
-      if (line.includes('promote:allow')) return; // explicit, visible exemption for a fake fixture
       for (const regex of regexes) {
         if (regex.test(line)) hits.push({ file, line: index + 1, pattern: regex.source });
       }
