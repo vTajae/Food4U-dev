@@ -1,0 +1,18 @@
+# Top-level paths exported to the public repository. Everything else stays private.
+# A leading "!" excludes a path that an earlier entry would include.
+.github
+.gitattributes
+.gitignore
+LICENSE
+README.md
+CONTRIBUTING.md
+SECURITY.md
+package.json
+package-lock.json
+neon.ts
+backend
+contract
+!contract/local-rust.mjs
+docs
+frontend
+scripts

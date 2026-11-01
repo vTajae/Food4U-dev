@@ -1,99 +1,105 @@
-# Food4U 🍽️
+# Food4U
 
-**AI-powered meal recommendations for people with dietary restrictions and medical conditions.**
+Meal ideas for people with dietary restrictions and medical conditions.
 
-Food4U takes a user's dietary preferences, allergies, and medical profile (including ICD-10-CM condition codes) and generates personalized, safe meal suggestions. Built solo for my first hackathon — designed like a production system.
+Food4U saves a person's conditions (ICD-10-CM), allergies and intolerances, diet and budget once, then uses that profile when they ask what to eat. The long-term goal is a recommendation engine where every suggestion passes a deterministic safety layer before it is shown. That layer is designed but not built yet; see [Status](#status).
+
+Live app: https://food4u-frontend.qias-webdev.workers.dev
+
+## Status
+
+| Area | State |
+|---|---|
+| Accounts, sessions, login | Working. D1 accounts, signed session cookie, per-request JWT to the backend |
+| Onboarding | Working. Five steps: cuisines, diet, medical condition (NLM Clinical Tables lookup), allergies and foods to avoid, spend per meal. Drafts are kept per account |
+| Profile persistence | Working. Neon Postgres through the FastAPI backend, keyed on a stable public id |
+| Ask screen | UI done. The backend's AI suggestion path is not configured in production and answers 503, which the UI reports plainly |
+| Safety layer | Design only ([docs/safety-design.md](docs/safety-design.md)). No suggestion is checked against the profile yet |
+| Meal plans, grocery lists, integrations | Not started ([docs/roadmap.md](docs/roadmap.md)) |
+
+Food4U suggests food, not treatment. Nothing it shows is medical advice.
 
 ## Architecture
 
-Two independently deployed services communicating over authenticated HTTP:
+Two services over authenticated HTTP:
 
 ```
-┌─────────────────────────────┐         ┌──────────────────────────────┐
-│  Frontend — Cloudflare       │   JWT   │  Backend — Python FastAPI    │
-│  Next.js 16 on vinext (Workers)      │ ◄─────► │  hosted on Render            │
-│  • D1 (SQLite) user accounts │  token  │  • Repository/Service/Route  │
-│  • KV session storage        │ exchange│    layered architecture      │
-│  • React Hook Form + Zod     │         │  • CockroachDB (Postgres)    │
-└─────────────────────────────┘         │  • Qdrant vector store       │
-                                        │  • LlamaIndex + Gemini API   │
-                                        └──────────┬───────────────────┘
-                                                   │
-                              External data: USDA FoodData Central,
-                              Spoonacular, Google Gemini
+Browser ──► Cloudflare Worker (Next.js 16 on vinext) ──JWT──► Render (FastAPI)
+            • D1: accounts   • KV: sessions*                  • Neon Postgres: profiles, medical history, diets
+            • NLM Clinical Tables lookups                      • USDA FoodData Central, Spoonacular proxies
+            • app/api/* routes proxy the backend               • Gemini + LlamaIndex + Qdrant (optional, lazy)
 ```
 
-**Why two servers?** Separation of concerns and independent deployment: the edge-rendered frontend stays fast and cheap on Cloudflare's free tier, while the Python backend owns AI orchestration and data-heavy integrations. Each side scales and deploys on its own cadence.
+\* Sessions use Neon when `SESSION_DATABASE_URL` is set; production stays on KV until the rollout in [docs/deploy.md](docs/deploy.md).
 
-## Tech Stack
+[docs/architecture.md](docs/architecture.md) covers the identity flow and request paths; [docs/adr/](docs/adr/) records the decisions behind the shape.
+
+## Tech stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js 16 (App Router) on vinext, React 19, TypeScript, React Hook Form, Zod, Tailwind CSS 4, shadcn/ui |
-| Edge platform | Cloudflare Workers, D1 (SQLite), KV, Wrangler 4 |
-| Auth | JWT token exchange between services (`@tsndr/cloudflare-worker-jwt`, bcrypt) |
-| Backend | Python, FastAPI, SQLAlchemy 2.0 (async), asyncpg, Uvicorn |
-| AI / Retrieval | Google Gemini, LlamaIndex, Qdrant vector store |
-| Food data | USDA FoodData Central API, Spoonacular API |
-| Datastores | CockroachDB (backend), D1 + KV (frontend) |
+| Frontend | Next.js 16 (App Router) on vinext, React 19, TypeScript, Tailwind CSS 4, shadcn/ui, React Hook Form + Zod |
+| Edge | Cloudflare Workers, D1, KV, Wrangler 4 |
+| Backend | Python 3.11, FastAPI, SQLAlchemy 2 (async), asyncpg, Uvicorn, on Render |
+| Databases | Neon Postgres (backend), D1 (accounts) |
+| Food and clinical data | USDA FoodData Central, Spoonacular, NLM Clinical Tables (ICD-10-CM) |
+| Tests | node:test, Playwright in real Chrome with a fake backend, pytest, a black-box web contract suite |
 
-## Documentation
-
-Start at [`docs/README.md`](docs/README.md): every document in the order it was written (origins, vision, Sprint 1 reports, diagnosis), the branch map, and how to run the tests and feedback loops.
-
-## Repository Layout
+## Repository layout
 
 ```
-frontend/   Next.js app — app/ routes, components, lib (session/auth), api/ services, D1 schema, Wrangler config, tests/, scripts/e2e/
-backend/    FastAPI app — routers, services, repositories, schemas, AI pipeline, migrations/, tests/
+frontend/   Next.js app: app/ routes, components/, lib/ (session, auth), api/ (backend client), database/ (D1), e2e/, tests/
+backend/    FastAPI app: app/api (routers → services → repositories), app/config, migrations/, tests/
+contract/   Black-box acceptance tests for the web layer, run against an isolated local server only
+scripts/    Post-deploy checks (D1 schema, live browser check, cleanup) and their tests
+docs/       Architecture, deploy, roadmap, safety design, ADRs
 ```
 
-The backend follows a **repository → service → route** pattern: routers handle HTTP, services hold business logic, repositories own data access. Pydantic schemas validate every boundary, mirrored by Zod schemas on the frontend.
+## Running locally
 
-## Running Locally
+Prerequisites: Node 22+, Python 3.11, a Neon project (free tier is enough), Google Chrome for the e2e suite.
 
-### Frontend
+Frontend:
 
 ```bash
 cd frontend
-npm install
-cp .dev.vars.example .dev.vars   # dev-only placeholder secrets
-npm run d1:local-initialize      # seed local D1 database
-npm run typegen                  # binding types from wrangler.jsonc
-npm run dev                      # vinext dev server on http://localhost:3001
+npm ci
+cp .dev.vars.example .dev.vars      # dev-only placeholder secrets
+npm run d1:local-initialize         # local D1 user table
+npm run typegen                     # worker-configuration.d.ts from wrangler.jsonc
+npm run dev                         # http://localhost:3001
 ```
 
-Deploy: `npm run deploy` (builds with vinext and deploys the Worker via `@vinext/cloudflare`).
-
-### Backend
-
-First create a short-lived child branch and set `$name` as described in `docs/neon-setup.md`. Never use the production URL; stop the backend and delete the child after testing.
+Backend, against a short-lived Neon branch and never production (see [docs/neon-setup.md](docs/neon-setup.md)):
 
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-export DATABASE_URL="$(neon connection-string "$name" --project-id patient-cherry-72346680 --pooled)"
-uvicorn server:app --reload
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -r requirements-dev.txt
+export DATABASE_URL="$(neon connection-string "$BRANCH" --project-id "$NEON_PROJECT_ID" --pooled)"
+export USER_JWT_SECRET_KEY=dev-only-jwt-secret USER_JWT_ALGORITHM=HS256
+uvicorn server:app --reload                             # http://127.0.0.1:8000, OpenAPI at /docs
 ```
 
-Interactive OpenAPI docs are auto-generated by FastAPI at `/docs`.
+`JWT_SECRET_KEY` in the Worker and `USER_JWT_SECRET_KEY` in the backend must match. Set `API_BASE_URL=http://127.0.0.1:8000` in `frontend/.dev.vars` for a full local loop.
 
-Both services expect environment variables for API keys (Gemini, Spoonacular, FDC), database URLs, and the shared JWT secret — see `frontend/wrangler` config and `backend/app/config`.
+## Tests
 
-## The Story
+```bash
+npm test                                   # root: post-deploy script tests
+cd frontend && npm run lint && npm run typecheck && npm test
+cd frontend && npm run e2e                 # real Chrome, both widths, fake backend; builds a fresh Worker
+node contract/local-next.mjs               # web contract against an isolated local server
+cd backend && .venv/Scripts/python -m pytest tests -q    # no database needed
+```
 
-**Inspiration.** Someone special to me is affected by dietary food restrictions, and I've watched how poorly many restaurants accommodate that community. (I don't like onions myself — I know the pain of a remade lunch on a short break.) Food4U's long-term goal is to hold businesses accountable for getting orders right the first time.
+## Contributing and security
 
-**Hackathon reality.** The team started at five; I finished as the last one standing. Highlights of what that taught me:
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
-- Aggressive feature-branching keeps a solo sprint focused on user stories.
-- Cloudflare's proxy and Wrangler behave differently from the Vite dev server — don't `response.json()` a body twice.
-- Async session hygiene matters: one session per instance, always closed, no leaks.
-- Real AI features need more than an API call — vector stores, prompt engineering, and careful variable analysis.
-- Documentation is a MUST, not a nice-to-have.
+## Background
 
-**What's next.** Fine-tuned suggestions from medical datasets, delivery-app integrations, and a UI pass. Ultimately: safer, faster dining for anyone with dietary restrictions.
+Food4U began as a 2024 hackathon project around one observation: people with dietary restrictions spend hours a week working out what they can safely eat, and most tools hand them generic lists. It is being rebuilt, in public, into a tool that does that work for them and shows its reasoning.
 
 ## License
 

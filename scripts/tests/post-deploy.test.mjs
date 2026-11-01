@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const secret = 'private-password postgres://user:private-password@example/db';
+const secret = 'private-password postgres://user:private-password@example/db'; // promote:allow fake fixture
 function output() {
   const lines = [];
   return { lines, write: line => lines.push(line) };

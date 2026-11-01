@@ -4,6 +4,9 @@ import { credentials, email, login, register, choose } from './journeys';
 test('register, duplicate account, validation, login and logout', async ({ page, gate }, info) => {
   await page.goto('/');
   await expect(page).toHaveURL(/\/login$/);
+  // No safety layer exists yet; the login promise must not claim one (hidden copy counts too).
+  await expect(page.getByText(/every suggestion is checked/i)).toHaveCount(0);
+  await expect(page.locator('ul[aria-label="What your profile records"]')).toHaveCount(1);
   await gate.check('root-login');
   await page.getByRole('button', { name: 'Log in', exact: true }).click();
   await expect(page.getByText('Enter a valid email address.', { exact: true })).toBeVisible();
@@ -32,7 +35,7 @@ test('register, duplicate account, validation, login and logout', async ({ page,
 });
 
 test('D018-03 account menu has no serious accessibility violations', async ({ page, gate }, info) => {
-  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-03: serious aria-hidden-focus; see DEFECTS.md');
+  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-03: serious aria-hidden-focus; https://github.com/vTajae/Food4U/issues/2');
   await login(page, `dashboard-${info.project.name}@food4u.test`);
   await page.getByRole('button', { name: 'Account menu' }).click();
   await gate.check('account-menu');
@@ -64,7 +67,7 @@ test('D018-05 a second account cannot see the first account intake', async ({ pa
 });
 
 test('D018-10 signup continues directly to authenticated intake', async ({ page, gate }) => {
-  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-10: signup forces a second login; see DEFECTS.md');
+  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-10: signup forces a second login; https://github.com/vTajae/Food4U/issues/5');
   await page.goto('/register', { waitUntil: 'networkidle' });
   await credentials(page, email(), 'Create account');
   await page.waitForLoadState('networkidle');
