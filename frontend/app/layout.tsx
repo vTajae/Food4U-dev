@@ -4,7 +4,7 @@ import { Toaster } from "~/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: { default: "Food4U", template: "%s · Food4U" },
-  description: "Meal suggestions checked against your conditions, allergies, diet and budget.",
+  description: "Meal ideas for people with dietary restrictions. Food4U saves your conditions, allergies, diet and budget; automatic safety checks are in development.",
 };
 
 export const viewport: Viewport = {
