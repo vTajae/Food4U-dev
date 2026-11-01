@@ -7,7 +7,7 @@ import { scopedIntakeDraft } from "../../../scripts/post-deploy-common.mjs";
 
 const [base, outDir] = process.argv.slice(2);
 mkdirSync(outDir, { recursive: true });
-const CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe";
+const CHROME = process.env.CHROME_PATH ?? "C:/Program Files/Google/Chrome/Application/chrome.exe";
 const viewports = {
   mobile: { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
   desktop: { width: 1440, height: 900, deviceScaleFactor: 1 },

@@ -10,5 +10,5 @@ The frontend keyed users on D1's integer primary key and sent it to the backend 
 ## Consequences
 
 - `POST /profile` creates or returns the profile for the bearer's public id; the frontend calls it before onboarding so a missing profile is never a 500.
-- The backend token is minted per request from the session, never cached, so one Worker isolate cannot leak a token across users.
+- The backend token is read from the current request's session, never from module state, so one Worker isolate cannot leak a token across users.
 - Both migrations (`backend/migrations/0001_profile_public_id.sql`, `frontend/database/migrations/0001_user_public_id.sql`) must be applied before code that reads `public_id` is deployed.

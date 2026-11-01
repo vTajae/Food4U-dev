@@ -1,6 +1,6 @@
 # Roadmap
 
-Status as of 2026-11-01. "Done" means in the code with tests; "partial" names what is missing.
+Status as of 2026-10-31. "Done" means in the code with tests; "partial" names what is missing.
 
 ## Sprint 1: UI foundation (October 2026)
 

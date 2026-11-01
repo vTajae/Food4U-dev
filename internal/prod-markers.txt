@@ -1,5 +1,4 @@
 # One case-insensitive regular expression per line. Any hit in an exported text file stops the promotion.
-# A source line containing "promote:allow" is skipped; use it only for an obviously fake fixture.
 # Internal tooling and process narration
 \bcockpit\b
 \.cockpit

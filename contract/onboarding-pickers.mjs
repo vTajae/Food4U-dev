@@ -6,7 +6,7 @@ const codePattern = /\b[A-Z]\d\d(?:\.\w+)?\b/;
 const evidence = resolve(process.env.PICKER_EVIDENCE || 'contract/.evidence');
 const prefix = process.env.PICKER_PREFIX || '017';
 
-// Slice 019 deliberately discards ownerless formState. Inspect/seed only this
+// The harness deliberately discards ownerless formState. Inspect/seed only this
 // real login's versioned draft; the official-payload assertions below remain.
 async function ownDraft(page) {
   await page.waitForFunction(() => Object.keys(localStorage).some(key => key.startsWith('food4u:intake:v1:')));

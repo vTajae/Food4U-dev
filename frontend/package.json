@@ -16,7 +16,6 @@
     "typegen": "wrangler types",
     "cf-typegen": "wrangler types",
     "d1:local-initialize": "wrangler d1 execute food4u-db --local --file=./database/basic.sql",
-    "d1:remote-initialize": "wrangler d1 execute food4u-db --remote --file=./database/basic.sql",
     "test": "tsx --import ./tests/worker-env.mjs --test tests/*.test.mts",
     "e2e:login": "node scripts/e2e/login-loop.mjs http://localhost:3001",
     "e2e:screenshots": "node scripts/e2e/screenshots.mjs http://localhost:3001 ./e2e/.artifacts/screenshots"

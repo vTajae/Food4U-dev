@@ -17,6 +17,6 @@ Cloudflare, Render, Neon, USDA, NLM and Spoonacular run their own programs for t
 ## In place today
 
 - Passwords are bcrypt hashes. Sessions are signed, HttpOnly, Secure, SameSite=Lax cookies.
-- The backend accepts only requests carrying a JWT signed by the Worker and minted per request; the external food API routes require it too.
+- The backend accepts only requests carrying a JWT the Worker issues at login and attaches per request from that request's own session; the external food API routes and diet-type creation require it too.
 - A per-user rate limit answers 429.
 - Secrets live only in the platforms' secret stores; the repository holds `.example` files.

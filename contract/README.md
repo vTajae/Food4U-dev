@@ -20,8 +20,8 @@ The browser guard **cannot observe server-side backend requests**, so the
 runner below also proves, inside the server, that `API_BASE_URL` points at an
 unreachable loopback address before any browser traffic starts.
 
-Use the safe local setup runner from the repo root (on this checkout, Windows
-Node/Chrome; frontend native dependencies are Windows binaries):
+Use the safe local setup runner from the repo root (the frontend dependencies must
+be installed for the platform you run on):
 
 ```sh
 node contract/local-next.mjs
@@ -50,7 +50,7 @@ there is no public account-delete endpoint. Each authenticated test registers
 its own unique account/context, with no test ordering dependency.
 
 Authenticated API checks explicitly replay the real UI-issued cookie to the
-same loopback origin. Playwright 1.49's HTTP cookie filtering does not share
+same loopback origin. Playwright's HTTP cookie filtering does not share
 Chromium's Secure-cookie exception for localhost; no cookie is forged.
 
 Against an **already safely isolated** app, the portable command is:
