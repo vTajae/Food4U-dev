@@ -109,8 +109,14 @@ export async function main(argv, { prod = defaultProd, dev = devRoot, log = cons
   }
   const message = `${title}\n\nPromoted from Food4U-dev ${devSha}.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n`;
   execFileSync('git', ['commit', '-q', '-F', '-'], { cwd: prod, input: message });
-  git(['push', '-q', '-u', 'origin', branch], prod);
+  // The branch is owned by this tool; a re-run replaces its single commit and updates the open PR.
+  git(['push', '-q', '-u', '--force-with-lease', 'origin', branch], prod);
 
+  const existing = spawnSync('gh', ['pr', 'view', branch, '--json', 'url', '--jq', '.url'], { cwd: prod, encoding: 'utf8' });
+  if (existing.status === 0 && existing.stdout.trim()) {
+    log(`updated ${existing.stdout.trim()}`);
+    return 0;
+  }
   const bodyArgs = flags.get('body') ? ['--body-file', resolve(flags.get('body'))] : ['--body', `Promoted from Food4U-dev ${devSha.slice(0, 7)}.`];
   const pr = spawnSync('gh', ['pr', 'create', '--base', 'main', '--head', branch, '--title', title, ...bodyArgs], { cwd: prod, encoding: 'utf8' });
   if (pr.status !== 0) throw new Error(`gh pr create failed:\n${pr.stderr}`);
