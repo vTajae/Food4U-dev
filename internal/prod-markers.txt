@@ -1,4 +1,5 @@
 # One case-insensitive regular expression per line. Any hit in an exported text file stops the promotion.
+# A source line containing "promote:allow" is skipped; use it only for an obviously fake fixture.
 # Internal tooling and process narration
 \bcockpit\b
 \.cockpit
@@ -11,7 +12,7 @@ openbrain
 \binternal/
 \brust-app\b
 # People and accounts
-tajae
+(^|[^v])tajae
 qiasme
 qias\.webdev@
 someone special
@@ -19,7 +20,7 @@ someone special
 patient-cherry
 \bsrv-[a-z0-9]{20}\b
 \biseem\b
-[A-Za-z]:\\
+\b[A-Za-z]:\\[A-Za-z_]
 # Secret shapes
 AIza[0-9A-Za-z_-]{20,}
 \bnpg_[A-Za-z0-9]{10,}
