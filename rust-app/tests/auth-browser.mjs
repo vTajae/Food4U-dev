@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from '../../frontend/node_modules/playwright-core/index.mjs';
 import { base, seedFixture, session, sessionKeys, randomUUID } from './auth-fixtures.mjs';
 
-const screenshot = new URL('../../docs/sprint/screenshots/rust-spike/002-login.png', import.meta.url);
+const screenshot = new URL('../../internal/sprint/screenshots/rust-spike/002-login.png', import.meta.url);
 const executablePath = process.env.CHROME_PATH || (process.platform === 'win32'
   ? 'C:/Program Files/Google/Chrome/Application/chrome.exe' : '/usr/bin/chromium');
 const fixture = await seedFixture();

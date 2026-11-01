@@ -32,7 +32,7 @@ test('register, duplicate account, validation, login and logout', async ({ page,
 });
 
 test('D018-03 account menu has no serious accessibility violations', async ({ page, gate }, info) => {
-  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-03: serious aria-hidden-focus; see DEFECTS.md');
+  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-03: serious aria-hidden-focus; see internal/e2e/DEFECTS.md');
   await login(page, `dashboard-${info.project.name}@food4u.test`);
   await page.getByRole('button', { name: 'Account menu' }).click();
   await gate.check('account-menu');
@@ -64,7 +64,7 @@ test('D018-05 a second account cannot see the first account intake', async ({ pa
 });
 
 test('D018-10 signup continues directly to authenticated intake', async ({ page, gate }) => {
-  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-10: signup forces a second login; see DEFECTS.md');
+  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-10: signup forces a second login; see internal/e2e/DEFECTS.md');
   await page.goto('/register', { waitUntil: 'networkidle' });
   await credentials(page, email(), 'Create account');
   await page.waitForLoadState('networkidle');

@@ -1,72 +1,41 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-
-# Runtime data
-__pycache__
-# Ignore compiled Python bytecode
-**/__pycache__/
-*.pyc
-
-#myDevStuff
-models-copy
-**/.postgresql
-
-
-
-
-
-
-# Compiled binary addons (https://nodejs.org/api/addons.html)
-build/Release
-
-# Dependency directories
+# Dependencies
 node_modules/
+.venv*/
 env/
 
-
-# TypeScript cache
+# Build output and caches
+dist/
+build/
+.next/
+.vinext/
+.wrangler/
+.cloudflare/
 *.tsbuildinfo
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
 .eslintcache
-
-# Optional stylelint cache
-.stylelintcache
-
-# Output of 'npm pack'
+.npm
+__pycache__/
+*.pyc
 *.tgz
 
-# Yarn Integrity file
-.yarn-integrity
-
-# dotenv environment variable files
-backend/env
+# Local secrets and environment
 .env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-.venv
-.venv311/
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-
-
-
-
-
-
-
-# cockpit run state (local orchestration ledger)
-.cockpit/
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
 .neon
+**/.postgresql
 
-# Real-browser post-deploy check screenshots (throwaway test data).
+# Logs and local evidence
+logs/
+*.log
 /live-check-evidence/
+.cockpit/
+
+# Agent and editor state
+.omc/
+.omx/
+.claude/settings.local.json
+.vscode/
+.idea/

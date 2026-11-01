@@ -111,7 +111,7 @@ frozen contract **37/0/6**.
 
 ## Production and owner gates
 For the current, owner-operated paired deployment, verification, and rollback
-procedure, use [`render-neon-cutover.md`](render-neon-cutover.md). The findings
+procedure, use [`render-neon-cutover.md`](../internal/runbooks/render-neon-cutover.md). The findings
 and gates below record the historical slice-001 state, not current deployment
 acceptance; slices 002–004 repaired the onboarding/session findings locally.
 

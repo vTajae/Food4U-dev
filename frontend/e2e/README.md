@@ -20,7 +20,7 @@ Historical Addendum 1 executor gate: **71 passed, 11 existing fixmes, zero failu
 one authorized full invocation. Four tolerated annotations: **two application
 events and two deliberate controls**. Frontend tests 129/129, root tests 9/9
 and build pass; the original single passing contract was not rerun. D018-04,
-D018-05 and D018-06 close in the slice 019 commit named in DEFECTS.md.
+D018-05 and D018-06 close in the slice 019 commit named in internal/e2e/DEFECTS.md.
 OMC's subsequent independent run found the old every-gate rule re-flagged
 settled aborts after sign-out, plus a private-page hydration race. Addendum 2
 settles each abort once at its first subsequent check and waits for networkidle
@@ -140,8 +140,8 @@ also retain the annotations. Counts are observations, not a retry allowance.
   different pathname, non-RSC, different error, POST, wrong type/status or
   different exact URL. The positive controls commit after failure and prove
   that a settled abort stays tolerated after navigation to a different page,
-  with exactly one annotation. See [D019-01](DEFECTS.md#d019-01-framework-rsc-stream-cancellation).
-- Known defects are `test.fixme` annotations with IDs in [DEFECTS.md](DEFECTS.md),
+  with exactly one annotation. See [D019-01](../../internal/e2e/DEFECTS.md#d019-01-framework-rsc-stream-cancellation).
+- Known defects are `test.fixme` annotations with IDs in [DEFECTS.md](../../internal/e2e/DEFECTS.md),
   not weakened gates or product fixes. The account-menu capture is audit-only;
   its failing accessibility check is separately retained as D018-03. The outage
   capture is not acceptance of its copy; D018-04 asserts the intended behavior.

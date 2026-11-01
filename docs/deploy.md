@@ -31,7 +31,7 @@ passwords, tokens, or database URLs in command output or evidence.
    `--wait` makes a failed deploy return non-zero; request acceptance alone is
    not deployment success. [Render CLI reference](https://render.com/docs/cli).
    Keep Render's Neon URL **pooled**; see the
-   [cutover configuration and backend checks](render-neon-cutover.md).
+   [cutover configuration and backend checks](../internal/runbooks/render-neon-cutover.md).
 3. **Gate D1 before deploying the Worker**:
 
    ```text
@@ -161,7 +161,7 @@ Review both services' usage before approving any keep-warm schedule.
 
 Stop at a failed gate; do not publish a Worker requiring an unapplied migration.
 For backend artifact/configuration rollback and the recorded Worker version,
-follow [cutover section 7](render-neon-cutover.md#7-rollback-the-paired-backend--database-then-frontend--owner-only-not-executed).
+follow [cutover section 7](../internal/runbooks/render-neon-cutover.md#7-rollback-the-paired-backend--database-then-frontend--owner-only-not-executed).
 Use the existing incident's Render artifact rollback guidance rather than
 assuming an old commit still builds. Worker rollback does **not** undo D1, KV,
 or Neon changes. Database restore/reverse migration needs a separately reviewed
