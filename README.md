@@ -30,7 +30,7 @@ Browser ──► Cloudflare Worker (Next.js 16 on vinext) ──JWT──► Re
             • app/api/* routes proxy the backend               • Gemini + LlamaIndex + Qdrant (optional, lazy)
 ```
 
-\* Sessions move from KV to Neon in an open pull request.
+\* Moving sessions from KV to Neon is in progress and not deployed.
 
 [docs/architecture.md](docs/architecture.md) covers the identity flow and request paths; [docs/adr/](docs/adr/) records the decisions behind the shape.
 

@@ -23,7 +23,7 @@ _Updated 2026-11-01._
 
 1. First promotion to `vTajae/Food4U`; configure the repo (squash only, ruleset on `main` without status checks, private vulnerability reporting); open issues for D018-* defects, deprecated `GET /profile`, stale CORS origin in `backend/server.py`, and the privacy page's "filter and explain suggestions" wording (pinned by `contract/pages-api.mjs`).
 2. Point Render at `Food4U` `main`; deploy the Worker from a clean checkout; run `check:d1`, `check:live`, `cleanup:live`; then delete `sprint1-nextjs`.
-3. Rebase and land PR #26 through the new process; its production rollout changes the Neon database and needs owner confirmation first.
+3. PR #26 (sessions in Neon): branch is merged with `main` and hardened after an independent security review (head `1c95e23`); unit 169, tsc 0, lint 0, contract 44 pass. NOT merged because `frontend/e2e/sessions.spec.ts` "signing in rotates the session" fails 3 of 4 desktop runs on the original PR head `6d27381` too, so the flake is in the PR, not the merge. Signature: after login a `GET /welcome?_rsc=…` RSC fetch is aborted while the page sits on `/dashboard`, so the gate's tolerated-abort rule rejects it. Fix the race (or the test's wait condition) before merging; do not weaken the gate. Its production rollout then changes the Neon database and needs owner confirmation.
 
 ## Owner-gated
 
