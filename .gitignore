@@ -32,9 +32,6 @@ logs/
 *.log
 /live-check-evidence/
 
-# Agent and editor state
-.omc/
-.omx/
-.claude/settings.local.json
+# Editor state
 .vscode/
 .idea/
