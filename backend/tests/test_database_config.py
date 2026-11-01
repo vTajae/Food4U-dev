@@ -37,6 +37,24 @@ def test_neon_url_builds_asyncpg_engine_with_verified_tls(scheme):
     asyncio.run(database.close())
 
 
+def test_sslmode_disable_connects_without_tls_for_the_local_container_network():
+    database = AsyncDatabaseSession("postgresql://u:p@db:5432/food4u?sslmode=disable")
+    asyncio.run(database.init())
+    captured = {}
+    def capture(*args, **kwargs):
+        captured.update(kwargs)
+        raise RuntimeError("connection captured")
+    database.engine.sync_engine.dialect.connect = capture
+    async def connect():
+        with pytest.raises(RuntimeError, match="connection captured"):
+            async with database.engine.connect():
+                pass
+    asyncio.run(connect())
+    assert "ssl" not in captured
+    assert "sslmode" not in captured
+    asyncio.run(database.close())
+
+
 def test_plain_asyncpg_url_keeps_database_and_query():
     database = AsyncDatabaseSession("postgresql+asyncpg://u:p@localhost:5432/test?timeout=10")
     asyncio.run(database.init())

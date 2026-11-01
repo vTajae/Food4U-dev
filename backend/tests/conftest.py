@@ -1,8 +1,9 @@
 """Environment defaults for no-database API tests; no import stubs needed."""
 import os
 
-os.environ.setdefault("USER_JWT_SECRET_KEY", "test-secret")
-os.environ.setdefault("USER_JWT_ALGORITHM", "HS256")
+# Forced, not defaulted: the suite mints its own tokens and must not depend on the host's secret.
+os.environ["USER_JWT_SECRET_KEY"] = "test-secret"
+os.environ["USER_JWT_ALGORITHM"] = "HS256"
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://u:p@localhost:5432/test")
 # Retain optional config defaults; identity tests do not import the AI stack.
 for _k, _v in {

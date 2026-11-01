@@ -1,0 +1,8 @@
+# Local Worker settings for `docker compose` (copy to .dev.vars.docker; ignored).
+# Every value is a DEV-ONLY placeholder. JWT_SECRET_KEY must equal the backend's
+# USER_JWT_SECRET_KEY in the root .env.
+USER_SESSION_SECRET=dev-only-session-secret
+USER_COOKIE_SECRET=dev-only-cookie-secret
+JWT_SECRET_KEY=dev-only-jwt-secret
+# The backend container, reachable by its Compose service name.
+API_BASE_URL=http://backend:8000
