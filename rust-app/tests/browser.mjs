@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from '../../frontend/node_modules/playwright-core/index.mjs';
 
 const base = process.env.SPIKE_URL || 'http://127.0.0.1:8789';
-const screenshot = new URL('../../docs/sprint/screenshots/rust-spike/001-counter.png', import.meta.url);
+const screenshot = new URL('../../internal/sprint/screenshots/rust-spike/001-counter.png', import.meta.url);
 const executablePath = process.env.CHROME_PATH || (
   process.platform === 'win32'
     ? 'C:/Program Files/Google/Chrome/Application/chrome.exe'

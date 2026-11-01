@@ -19,7 +19,7 @@
     "d1:remote-initialize": "wrangler d1 execute food4u-db --remote --file=./database/basic.sql",
     "test": "tsx --import ./tests/worker-env.mjs --test tests/*.test.mts",
     "e2e:login": "node scripts/e2e/login-loop.mjs http://localhost:3001",
-    "e2e:screenshots": "node scripts/e2e/screenshots.mjs http://localhost:3001 ../docs/sprint/screenshots/nextjs/after"
+    "e2e:screenshots": "node scripts/e2e/screenshots.mjs http://localhost:3001 ./e2e/.artifacts/screenshots"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

@@ -10,8 +10,8 @@ import { localBase } from '../../contract/harness.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const base = localBase(process.env.BASE_URL || process.env.BASE || 'http://127.0.0.1:8789');
-const output = resolve(root, process.env.FOOD4U_AUTH_VISUAL_DIR || 'docs/sprint/screenshots/rust-005');
-const baseline = resolve(root, 'docs/sprint/screenshots/nextjs/after');
+const output = resolve(root, process.env.FOOD4U_AUTH_VISUAL_DIR || 'internal/sprint/screenshots/rust-005');
+const baseline = resolve(root, 'internal/sprint/screenshots/nextjs/after');
 const evidence = resolve(root, 'rust-app/.evidence/007-auth-visual.json');
 await mkdir(output, { recursive: true });
 await mkdir(resolve(root, 'rust-app/.evidence'), { recursive: true });

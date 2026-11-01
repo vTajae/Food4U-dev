@@ -18,7 +18,7 @@ fastapi dev server.py
 Environment variables (`.env`, gitignored): `DATABASE_URL`, `USER_JWT_SECRET_KEY`, `USER_JWT_ALGORITHM` (HS256), `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`, Gemini/OpenAI/Qdrant/FDC/Spoonacular keys. `USER_JWT_SECRET_KEY` must equal the frontend Worker's `JWT_SECRET_KEY`.
 
 ## Identity contract with the frontend
-The frontend (Cloudflare Worker, D1) owns accounts and passwords. It signs a JWT whose `user_id` claim is the user's **public id** (a UUID chosen at registration; `legacy-<n>` for accounts that predate it). This service keys `profile.public_id` on that value and never on an integer. `POST /profile` creates-or-returns the profile; `GET /profile` does the same but is deprecated. See `../docs/sprint/data-flow-report.md` for the reasoning.
+The frontend (Cloudflare Worker, D1) owns accounts and passwords. It signs a JWT whose `user_id` claim is the user's **public id** (a UUID chosen at registration; `legacy-<n>` for accounts that predate it). This service keys `profile.public_id` on that value and never on an integer. `POST /profile` creates-or-returns the profile; `GET /profile` does the same but is deprecated. See `../internal/sprint/data-flow-report.md` for the reasoning.
 
 ## Migrations
 Plain SQL, applied by hand (no Alembic yet): `migrations/0001_profile_public_id.sql`. Apply on CockroachDB before deploying code that reads `profile.public_id`.

@@ -24,7 +24,7 @@ test('profile chips and ask validation', { annotation: { type: 'expected-http-er
 });
 
 test('D018-11 loading suggestion strip remains keyboard scrollable', { annotation: { type: 'expected-http-error', description: '/api/suggestion:503' } }, async ({ page, gate }, info) => {
-  test.fixme(info.project.name === 'mobile' && process.env.E2E_AUDIT !== '1', 'D018-11: serious scrollable-region-focusable during loading; see DEFECTS.md');
+  test.fixme(info.project.name === 'mobile' && process.env.E2E_AUDIT !== '1', 'D018-11: serious scrollable-region-focusable during loading; see internal/e2e/DEFECTS.md');
   await login(page, `dashboard-${info.project.name}@food4u.test`);
   await page.getByRole('textbox', { name: 'Ask about food' }).fill('A vegetarian lunch');
   const response = page.waitForResponse(response => new URL(response.url()).pathname === '/api/suggestion');
@@ -46,7 +46,7 @@ test('D018-04 suggestion outage is unavailable, not no matches', { annotation: {
 });
 
 test('D018-07 Profile opens saved editable profile, not empty intake', async ({ page, gate }, info) => {
-  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-07: Profile routes to empty welcome wizard; see DEFECTS.md');
+  test.fixme(process.env.E2E_AUDIT !== '1', 'D018-07: Profile routes to empty welcome wizard; see internal/e2e/DEFECTS.md');
   await login(page, `dashboard-${info.project.name}@food4u.test`);
   await page.getByRole('link', { name: 'Profile', exact: true }).click();
   await page.waitForURL(url => ['/welcome', '/profile'].includes(url.pathname));

@@ -177,7 +177,7 @@ node contract/local-rust.mjs --fixtures --checks --contract
 
 Evidence uses `contract/.evidence/007-rust-*`, `007-dashboard-mock.json` and
 `rust-app/.evidence/007-dashboard-{browser,visual}.json`. Actual screenshots and
-baseline-left/Rust-right comparisons live in `docs/sprint/screenshots/rust-007/`.
+baseline-left/Rust-right comparisons live in `internal/sprint/screenshots/rust-007/`.
 Baseline05 is failed desktop / pending mobile login, while Rust proves success;
 baseline09 is a deleted component gallery, while Rust captures separate actual
 cards/loading/empty states. These are explicit state differences, not pixel parity
