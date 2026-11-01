@@ -1,6 +1,6 @@
 # Food4U web-layer contract
 
-Black-box acceptance tests for the current Next.js app and future Rust slices.
+Black-box acceptance tests for the web layer.
 Uses Node's built-in test runner and the existing frontend `playwright-core`;
 no installation or new dependencies. Tests inspect public HTTP, accessible UI,
 and real response cookies, not framework transports, action IDs or payloads.
@@ -16,10 +16,9 @@ service workers are blocked. Render requests are independently observed and
 fail fast, with `ONRENDER_REQUESTS_OBSERVED=0` printed on completion. API calls
 disable auto-redirects and assert redirects explicitly.
 
-The browser guard **cannot observe server-side backend requests**. The current
-`frontend/api/services/baseService.ts` hardcodes the production Render URL,
-despite `frontend/wrangler.jsonc` also defining `API_BASE_URL`. A `.dev.vars`
-override **alone is insufficient** for this checkout.
+The browser guard **cannot observe server-side backend requests**, so the
+runner below also proves, inside the server, that `API_BASE_URL` points at an
+unreachable loopback address before any browser traffic starts.
 
 Use the safe local setup runner from the repo root (on this checkout, Windows
 Node/Chrome; frontend native dependencies are Windows binaries):
@@ -90,15 +89,8 @@ accepts **302, 303 or 307**, never cached permanent **301/308**, while still
 pinning the Location path. It does not pin framework-specific login-action
 transport; it pins the user's destination.
 
-Fresh slice-004 run: Next.js **37 passed, 0 failed, 6 skipped** (including the
-parent test), frontend unit tests **4/4**, Render requests **0**. The unchanged
-Rust-spike run: **1 passed, 36 failed, 6 skipped** (35 failing leaf checks plus
-the parent); the safety check passes. Its gaps are auth tabs/validation and
-registration UI, page routing/privacy, and the public APIs. Auth-dependent
-cookie/logout/outage/400 checks stop at missing registration UI; these are not
-independent failures of the previously proven wire formats. Full raw failures
-are local `contract/.evidence/004-rust-contract.log`. Expected gaps are not
-waived acceptance; later Rust slices must make the same assertions pass.
+Last recorded run: **37 passed, 0 failed, 6 skipped** (including the parent
+test), Render requests **0**. Raw logs land under the ignored `contract/.evidence/`.
 
 ## Explicit skips: real backend required
 

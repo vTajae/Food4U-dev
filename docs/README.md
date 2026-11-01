@@ -1,14 +1,14 @@
 # Food4U documentation
 
-- [`deploy.md`](deploy.md) — deploy order and post-deploy checks.
-- [`neon-setup.md`](neon-setup.md) — Neon Postgres setup and local proof.
-- [`API/`](API/) — notes on the external APIs (USDA FoodData Central, NLM Clinical Tables).
-- [`../frontend/DESIGN.md`](../frontend/DESIGN.md) — the design system ("Pantry Label"): tokens, type, components, rules.
-
-Design notes, sprint reports, screenshot evidence and owner runbooks live in the private `internal/` folder of the development repository and are not published.
-
-## Running things
-
-- Frontend: `frontend/README.md`. Tests: `cd frontend && npm test`.
-- Backend: `backend/README.md`. Tests: `cd backend && .venv/Scripts/python -m pytest tests -q`.
-- Root: `npm test` (post-deploy scripts), `node contract/local-next.mjs` (web contract against a local server).
+| Document | What it covers |
+|---|---|
+| [architecture.md](architecture.md) | The two services, the identity flow, request paths, data stores, failure behavior |
+| [roadmap.md](roadmap.md) | Sprint 1 items and the product phases, with their real status |
+| [safety-design.md](safety-design.md) | The deterministic safety layer as designed; not built yet |
+| [deploy.md](deploy.md) | Deploy order, secrets, post-deploy checks, rollback |
+| [neon-setup.md](neon-setup.md) | Neon Postgres: environment, pooling, short-lived branches for local work |
+| [adr/](adr/) | Architecture decision records |
+| [API/](API/) | Notes on the external APIs (USDA FoodData Central, NLM Clinical Tables) |
+| [../frontend/DESIGN.md](../frontend/DESIGN.md) | The design system ("Pantry Label") |
+| [../frontend/e2e/README.md](../frontend/e2e/README.md) | The real-Chrome end-to-end gate |
+| [../contract/README.md](../contract/README.md) | The black-box web contract suite |
