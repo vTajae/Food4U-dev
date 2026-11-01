@@ -28,8 +28,29 @@ export type SessionEnv = {
 // Long enough for a Neon compute to wake from scale-to-zero.
 const QUERY_TIMEOUT_MS = 8_000;
 
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]"]);
+
+function parsedOrThrow(value: string, name: string): URL {
+  try {
+    return new URL(value);
+  } catch {
+    // The driver's own error would echo the connection string, password included.
+    throw new Error(`${name} is not a valid URL`);
+  }
+}
+
 export function createNeonSessionStore(url: string, fetchEndpoint?: string): SessionStore {
-  if (fetchEndpoint) neonConfig.fetchEndpoint = fetchEndpoint;
+  const parsed = parsedOrThrow(url, "SESSION_DATABASE_URL");
+  if (parsed.protocol !== "postgres:" && parsed.protocol !== "postgresql:") {
+    throw new Error("SESSION_DATABASE_URL must be a postgres:// URL");
+  }
+  if (fetchEndpoint) {
+    // Only a local fake endpoint may receive the connection-string header.
+    if (!LOOPBACK_HOSTS.has(parsedOrThrow(fetchEndpoint, "NEON_FETCH_ENDPOINT").hostname)) {
+      throw new Error("NEON_FETCH_ENDPOINT must point at a loopback host");
+    }
+    neonConfig.fetchEndpoint = fetchEndpoint;
+  }
   const sql = neon(url);
   // A fresh signal per request; a transaction takes it once for the whole batch.
   const timeout = () => ({ fetchOptions: { signal: AbortSignal.timeout(QUERY_TIMEOUT_MS) } });

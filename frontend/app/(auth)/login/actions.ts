@@ -54,7 +54,8 @@ export async function authenticate(
     // session's flags, such as the post-signup welcome step, carry over.
     const previous = await getSession();
     await startSession({ ...(previous.data.auth ? {} : previous.data), auth: result.user, token: result.token });
-  } catch {
+  } catch (error) {
+    console.error("Sign-in could not start a session:", (error as Error).name);
     return { status: "error", message: "We couldn't sign you in right now. Please try again." };
   }
   // Login depends on D1 and the session store only. The backend profile is ensured by the dashboard,

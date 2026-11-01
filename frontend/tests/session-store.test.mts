@@ -180,5 +180,10 @@ describe("store selection", () => {
       /SESSION_DATABASE_URL is not set/.test(error.message));
     assert.throws(() => sessionStoreFor({ cloudflare_KV: kv, SESSION_STORE: "redis", SESSION_DATABASE_URL: url }), (error: Error) =>
       !error.message.includes("synthetic") && /must be "neon" or "kv"/.test(error.message));
+    // A mis-pasted secret must never reach the logs through the driver's own error.
+    assert.throws(() => createNeonSessionStore("postgresql://user:hunter2-secret@broken host/db"), (error: Error) =>
+      !error.message.includes("hunter2") && /SESSION_DATABASE_URL is not a valid URL/.test(error.message));
+    assert.throws(() => createNeonSessionStore(url, "https://evil.example/sql"), (error: Error) =>
+      /loopback/.test(error.message));
   });
 });
